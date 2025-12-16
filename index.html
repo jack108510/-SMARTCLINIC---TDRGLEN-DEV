@@ -956,69 +956,6 @@
             // Use the new comparison function with no comparisons
             updateDisplayForPeriodWithComparisons(period, []);
         }
-            
-            // Filter daily data
-            const filteredData = fullInvoiceData.dailyData.filter(item => {
-                return item.date >= startDate && item.date <= endDate;
-            });
-            
-            // Calculate statistics for filtered period
-            const totalInvoices = filteredData.reduce((sum, item) => sum + item.count, 0);
-            const totalRevenue = filteredData.reduce((sum, item) => sum + (item.revenue || 0), 0);
-            
-            // Calculate weekday and Saturday averages (excluding Sundays)
-            const weekdayData = filteredData.filter(item => {
-                const dayOfWeek = item.date.getDay();
-                return dayOfWeek >= 1 && dayOfWeek <= 5;
-            });
-            const saturdayData = filteredData.filter(item => item.date.getDay() === 6);
-            
-            // Count days excluding Sundays
-            const daysExcludingSundays = filteredData.filter(item => item.date.getDay() !== 0).length;
-            
-            const weekdayInvoices = weekdayData.reduce((sum, item) => sum + item.count, 0);
-            const saturdayInvoices = saturdayData.reduce((sum, item) => sum + item.count, 0);
-            
-            const weekdayDays = weekdayData.length;
-            const saturdayDays = saturdayData.length;
-            
-            // Calculate averages (excluding Sundays from avgPerDay)
-            const avgPerDay = daysExcludingSundays > 0 ? totalInvoices / daysExcludingSundays : 0;
-            const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
-            const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
-            
-            // Update statistics cards
-            updateStat('totalInvoices', totalInvoices.toLocaleString());
-            if (totalRevenue > 0) {
-                updateStat('totalRevenue', '$' + totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-            } else {
-                updateStat('totalRevenue', '-');
-            }
-            updateStat('avgPerDay', avgPerDay.toFixed(2));
-            updateStat('avgPerWeekday', avgPerWeekday.toFixed(2));
-            updateStat('avgPerSaturday', avgPerSaturday.toFixed(2));
-            
-            // Update card labels
-            const totalInvoicesLabel = document.getElementById('totalInvoicesLabel');
-            const totalRevenueLabel = document.getElementById('totalRevenueLabel');
-            if (totalInvoicesLabel) {
-                totalInvoicesLabel.textContent = `Invoices in ${periodLabel.toLowerCase()}`;
-            }
-            if (totalRevenueLabel) {
-                totalRevenueLabel.textContent = `Revenue in ${periodLabel.toLowerCase()}`;
-            }
-            
-            // Update date range display
-            const dateRangeEl = document.getElementById('dateRange');
-            dateRangeEl.textContent = `${periodLabel}: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
-            
-            // Update chart
-            if (filteredData.length > 0) {
-                updateChart(filteredData);
-            } else {
-                showChartMessage('No data available for the selected period.');
-            }
-        }
 
         function processInvoiceData(data) {
             // Calculate date range (last 365 days, ending yesterday)
