@@ -1313,11 +1313,14 @@
             
             console.log('✅ File protocol check passed, proceeding with request');
             
+            // Declare url outside try block for error handling
+            let url = aiWebhookUrl;
+            
             try {
                 console.group('📦 Preparing Request Data');
                 const dataPrepStart = performance.now();
                 
-                // Prepare query parameters for GET request
+                // Prepare data for POST request (not GET - URL too long with all daily data)
                 // Include all invoice data in the request
                 const invoiceDataPayload = fullInvoiceData ? {
                     totalInvoices: fullInvoiceData.totalInvoices,
@@ -1359,58 +1362,42 @@
                 console.log('⏱️ Data preparation time:', (performance.now() - dataPrepStart).toFixed(2) + 'ms');
                 console.groupEnd();
                 
-                console.group('🔗 Building Request URL');
+                console.group('🔗 Preparing POST Request');
                 const urlBuildStart = performance.now();
                 
-                // Encode the data as JSON in the query parameter
-                const params = new URLSearchParams({
-                    data: requestDataString
+                // Use POST instead of GET to avoid URL length limits
+                url = aiWebhookUrl;
+                
+                console.log('Request Details:', {
+                    method: 'POST',
+                    url: url,
+                    bodySize: requestDataSize + ' bytes',
+                    bodyLength: requestDataString.length + ' characters'
                 });
                 
-                const paramsString = params.toString();
-                console.log('URL Parameters:', {
-                    paramString: paramsString.substring(0, 200) + (paramsString.length > 200 ? '...' : ''),
-                    paramLength: paramsString.length + ' characters',
-                    paramSize: new Blob([paramsString]).size + ' bytes'
-                });
-                
-                // Build URL with query parameters (using server proxy)
-                const url = aiWebhookUrl + (aiWebhookUrl.includes('?') ? '&' : '?') + paramsString;
-                
-                console.log('Final URL Details:', {
-                    baseUrl: aiWebhookUrl,
-                    fullUrl: url.substring(0, 300) + (url.length > 300 ? '...' : ''),
-                    urlLength: url.length + ' characters',
-                    urlSize: new Blob([url]).size + ' bytes',
-                    hasQueryParams: url.includes('?'),
-                    queryParamCount: (url.match(/[&?]/g) || []).length
-                });
-                
-                // Check URL length limits (browsers typically limit to ~2000 chars for GET)
-                if (url.length > 2000) {
-                    console.warn('⚠️ URL length exceeds 2000 characters - may cause issues with some servers');
-                    console.warn('Consider using POST instead of GET for large payloads');
-                }
-                
-                console.log('⏱️ URL building time:', (performance.now() - urlBuildStart).toFixed(2) + 'ms');
+                console.log('⏱️ Request preparation time:', (performance.now() - urlBuildStart).toFixed(2) + 'ms');
                 console.groupEnd();
                 
                 console.group('🌐 Sending Fetch Request');
                 const fetchStart = performance.now();
                 console.log('Fetch Configuration:', {
-                    method: 'GET',
-                    url: url.substring(0, 200) + '...',
+                    method: 'POST',
+                    url: url,
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json'
-                    }
+                    },
+                    bodySize: requestDataString.length + ' characters'
                 });
                 
                 console.log('⏳ Initiating fetch request...');
                 const fetchPromise = fetch(url, {
-                    method: 'GET',
+                    method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'Accept': 'application/json'
-                    }
+                    },
+                    body: requestDataString
                 });
                 
                 console.log('Fetch promise created, awaiting response...');
