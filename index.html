@@ -1025,87 +1025,94 @@
         // Update Staff KPI Cards
         function updateStaffKPICards(data) {
             if (!data || !Array.isArray(data) || data.length === 0) return;
-            if (!staffData) return;
+            if (!staffData || !staffData.dailyData || staffData.dailyData.length === 0) {
+                console.log('No staff data available for KPI cards');
+                return;
+            }
 
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            yesterday.setHours(0, 0, 0, 0);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            // Since data is monthly (month_start), get current month and previous month
+            const today = new Date();
+            const currentMonth = today.toISOString().split('T')[0].substring(0, 7); // YYYY-MM
+            
+            const prevMonth = new Date(today);
+            prevMonth.setMonth(prevMonth.getMonth() - 1);
+            const prevMonthStr = prevMonth.toISOString().split('T')[0].substring(0, 7);
+            
+            const lastYearMonth = new Date(today);
+            lastYearMonth.setFullYear(lastYearMonth.getFullYear() - 1);
+            const lastYearMonthStr = lastYearMonth.toISOString().split('T')[0].substring(0, 7);
 
-            const dayBefore = new Date(yesterday);
-            dayBefore.setDate(dayBefore.getDate() - 1);
-            const dayBeforeStr = dayBefore.toISOString().split('T')[0];
+            // Find data by month_start (since data is monthly)
+            const currentMonthStaff = staffData.dailyData.find(d => {
+                const dateStr = d.date.toISOString().split('T')[0].substring(0, 7);
+                return dateStr === currentMonth;
+            });
+            const prevMonthStaff = staffData.dailyData.find(d => {
+                const dateStr = d.date.toISOString().split('T')[0].substring(0, 7);
+                return dateStr === prevMonthStr;
+            });
+            const lastYearMonthStaff = staffData.dailyData.find(d => {
+                const dateStr = d.date.toISOString().split('T')[0].substring(0, 7);
+                return dateStr === lastYearMonthStr;
+            });
 
-            const lastWeek = new Date(yesterday);
-            lastWeek.setDate(lastWeek.getDate() - 7);
-            const lastWeekStr = lastWeek.toISOString().split('T')[0];
-
-            const yesterdayStaff = staffData.dailyData.find(d => 
-                d.date.toISOString().split('T')[0] === yesterdayStr
+            // Get last 12 months of data for average
+            const twelveMonthsAgo = new Date(today);
+            twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+            const recent12Months = staffData.dailyData.filter(d => 
+                d.date >= twelveMonthsAgo && d.date <= today
             );
-            const dayBeforeStaff = staffData.dailyData.find(d => 
-                d.date.toISOString().split('T')[0] === dayBeforeStr
-            );
-            const lastWeekStaff = staffData.dailyData.find(d => 
-                d.date.toISOString().split('T')[0] === lastWeekStr
-            );
-
-            const thirtyDaysAgo = new Date(yesterday);
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            const recent30Days = staffData.dailyData.filter(d => 
-                d.date >= thirtyDaysAgo && d.date < yesterday
-            );
-            const avg30Days = recent30Days.length > 0 ? {
-                totalHours: recent30Days.reduce((sum, d) => sum + (d.totalHours || 0), 0) / recent30Days.length,
-                staffCount: recent30Days.reduce((sum, d) => sum + (d.staffCount || 0), 0) / recent30Days.length,
-                avgHours: recent30Days.reduce((sum, d) => sum + (d.avgHours || 0), 0) / recent30Days.length,
-                productivity: recent30Days.reduce((sum, d) => sum + (d.productivity || 0), 0) / recent30Days.length
+            const avg12Months = recent12Months.length > 0 ? {
+                totalHours: recent12Months.reduce((sum, d) => sum + (d.totalHours || 0), 0) / recent12Months.length,
+                staffCount: recent12Months.reduce((sum, d) => sum + (d.staffCount || 0), 0) / recent12Months.length,
+                avgHours: recent12Months.reduce((sum, d) => sum + (d.avgHours || 0), 0) / recent12Months.length,
+                productivity: recent12Months.reduce((sum, d) => sum + (d.productivity || 0), 0) / recent12Months.length
             } : { totalHours: null, staffCount: null, avgHours: null, productivity: null };
 
             // Total Staff Hours
             updateKPICard('staffTotalHours', 'staffTotalHoursComparisons', {
-                value: yesterdayStaff ? yesterdayStaff.totalHours : null,
-                prevDay: dayBeforeStaff ? dayBeforeStaff.totalHours : null,
-                lastWeek: lastWeekStaff ? lastWeekStaff.totalHours : null,
-                avg30d: avg30Days.totalHours
+                value: currentMonthStaff ? currentMonthStaff.totalHours : null,
+                prevDay: prevMonthStaff ? prevMonthStaff.totalHours : null,
+                lastWeek: lastYearMonthStaff ? lastYearMonthStaff.totalHours : null,
+                avg30d: avg12Months.totalHours
             }, (val) => val.toFixed(1) + ' hrs');
 
             // Active Staff Members
             updateKPICard('staffActiveMembers', 'staffActiveMembersComparisons', {
-                value: yesterdayStaff ? yesterdayStaff.staffCount : null,
-                prevDay: dayBeforeStaff ? dayBeforeStaff.staffCount : null,
-                lastWeek: lastWeekStaff ? lastWeekStaff.staffCount : null,
-                avg30d: avg30Days.staffCount
+                value: currentMonthStaff ? currentMonthStaff.staffCount : null,
+                prevDay: prevMonthStaff ? prevMonthStaff.staffCount : null,
+                lastWeek: lastYearMonthStaff ? lastYearMonthStaff.staffCount : null,
+                avg30d: avg12Months.staffCount
             }, (val) => Math.round(val) + ' staff');
 
             // Average Hours per Staff
             updateKPICard('staffAvgHours', 'staffAvgHoursComparisons', {
-                value: yesterdayStaff ? yesterdayStaff.avgHours : null,
-                prevDay: dayBeforeStaff ? dayBeforeStaff.avgHours : null,
-                lastWeek: lastWeekStaff ? lastWeekStaff.avgHours : null,
-                avg30d: avg30Days.avgHours
+                value: currentMonthStaff ? currentMonthStaff.avgHours : null,
+                prevDay: prevMonthStaff ? prevMonthStaff.avgHours : null,
+                lastWeek: lastYearMonthStaff ? lastYearMonthStaff.avgHours : null,
+                avg30d: avg12Months.avgHours
             }, (val) => val.toFixed(1) + ' hrs');
 
             // Productivity Score (revenue per hour)
-            const productivityYesterday = yesterdayStaff && yesterdayStaff.totalHours > 0
-                ? yesterdayStaff.revenue / yesterdayStaff.totalHours
+            const productivityCurrent = currentMonthStaff && currentMonthStaff.totalHours > 0
+                ? currentMonthStaff.totalRevenue / currentMonthStaff.totalHours
                 : null;
-            const productivityDayBefore = dayBeforeStaff && dayBeforeStaff.totalHours > 0
-                ? dayBeforeStaff.revenue / dayBeforeStaff.totalHours
+            const productivityPrev = prevMonthStaff && prevMonthStaff.totalHours > 0
+                ? prevMonthStaff.totalRevenue / prevMonthStaff.totalHours
                 : null;
-            const productivityLastWeek = lastWeekStaff && lastWeekStaff.totalHours > 0
-                ? lastWeekStaff.revenue / lastWeekStaff.totalHours
+            const productivityLastYear = lastYearMonthStaff && lastYearMonthStaff.totalHours > 0
+                ? lastYearMonthStaff.totalRevenue / lastYearMonthStaff.totalHours
                 : null;
-            const productivity30d = avg30Days.totalHours > 0 && recent30Days.length > 0
-                ? recent30Days.reduce((sum, d) => sum + (d.revenue || 0), 0) / 
-                  recent30Days.reduce((sum, d) => sum + (d.totalHours || 0), 0)
+            const productivity12Months = avg12Months.totalHours > 0 && recent12Months.length > 0
+                ? recent12Months.reduce((sum, d) => sum + (d.totalRevenue || 0), 0) / 
+                  recent12Months.reduce((sum, d) => sum + (d.totalHours || 0), 0)
                 : null;
 
             updateKPICard('staffProductivity', 'staffProductivityComparisons', {
-                value: productivityYesterday,
-                prevDay: productivityDayBefore,
-                lastWeek: productivityLastWeek,
-                avg30d: productivity30d
+                value: productivityCurrent,
+                prevDay: productivityPrev,
+                lastWeek: productivityLastYear,
+                avg30d: productivity12Months
             }, (val) => '$' + val.toFixed(2) + '/hr');
         }
 
