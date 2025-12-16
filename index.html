@@ -1277,17 +1277,83 @@
             return date.toISOString().split('T')[0];
         }
 
-        function updateChart(dailyData) {
+        function updateChartWithComparisons(mainData, comparisonDatasets) {
             const ctx = document.getElementById('invoiceChart').getContext('2d');
-            
-            const labels = dailyData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            const counts = dailyData.map(d => d.count);
-            const hasRevenue = dailyData.some(d => d.revenue !== undefined && d.revenue > 0);
-            const revenues = hasRevenue ? dailyData.map(d => d.revenue || 0) : null;
+            const labels = mainData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const counts = mainData.map(d => d.count);
+            const hasRevenue = mainData.some(d => d.revenue !== undefined && d.revenue > 0);
+            const revenues = hasRevenue ? mainData.map(d => d.revenue || 0) : null;
 
             if (invoiceChart) {
                 invoiceChart.destroy();
             }
+
+            const datasets = [{
+                label: 'Current Period',
+                data: counts,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 5,
+                yAxisID: 'y'
+            }];
+
+            // Add revenue dataset if available
+            if (hasRevenue && revenues) {
+                datasets.push({
+                    label: 'Revenue',
+                    data: revenues,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    yAxisID: 'y1'
+                });
+            }
+
+            // Add comparison datasets
+            const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
+            comparisonDatasets.forEach((comp, index) => {
+                const compCounts = comp.data.map(d => d.count);
+                const compColor = comp.color || colors[index % colors.length];
+                datasets.push({
+                    label: comp.label,
+                    data: compCounts,
+                    borderColor: compColor,
+                    backgroundColor: compColor + '20',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    yAxisID: 'y'
+                });
+                
+                // Add revenue comparison if available
+                if (hasRevenue && comp.data.some(d => d.revenue !== undefined && d.revenue > 0)) {
+                    const compRevenues = comp.data.map(d => d.revenue || 0);
+                    datasets.push({
+                        label: comp.label + ' (Revenue)',
+                        data: compRevenues,
+                        borderColor: compColor,
+                        backgroundColor: compColor + '20',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 5,
+                        yAxisID: 'y1'
+                    });
+                }
+            });
 
             const datasets = [{
                 label: 'Invoices',
@@ -1397,6 +1463,11 @@
                     }
                 }
             });
+        }
+
+        function updateChart(dailyData) {
+            // Legacy function - use comparison function with no comparisons
+            updateChartWithComparisons(dailyData, []);
         }
 
         function showChartMessage(message) {
