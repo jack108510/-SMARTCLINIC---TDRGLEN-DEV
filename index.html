@@ -952,6 +952,57 @@
             console.log('=== FETCH DATA END ===');
         }
 
+        // Fetch Staff Data from Webhook
+        async function fetchStaffData() {
+            console.log('=== FETCH STAFF DATA START ===');
+            console.log('Staff Webhook URL:', staffDataWebhookUrl);
+            
+            try {
+                const response = await fetch(staffDataWebhookUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('=== STAFF DATA RECEIVED FROM WEBHOOK ===');
+                console.log('Staff data type:', typeof data);
+                console.log('Staff data is array:', Array.isArray(data));
+                console.log('Staff data length:', Array.isArray(data) ? data.length : 'N/A');
+                console.log('Full staff data:', data);
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log('First staff item keys:', Object.keys(data[0]));
+                    console.log('First staff item sample:', data[0]);
+                    console.log('Sample of first 3 staff items:', data.slice(0, 3));
+                }
+                
+                // Process staff data
+                processStaffData(data);
+                
+                // Update staff KPIs and charts
+                if (staffData && staffData.dailyData && staffData.dailyData.length > 0) {
+                    console.log('Updating staff KPIs and charts with staff webhook data...');
+                    updateStaffKPICards(data);
+                    updateStaffCharts();
+                } else {
+                    console.warn('No staff data processed from staff webhook');
+                }
+            } catch (error) {
+                console.error('=== ERROR FETCHING STAFF DATA ===');
+                console.error('Error type:', error.constructor.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+            }
+            console.log('=== FETCH STAFF DATA END ===');
+        }
+
         // Process and Display Data
         function displayData(data) {
             console.log('=== DISPLAY DATA START ===');
