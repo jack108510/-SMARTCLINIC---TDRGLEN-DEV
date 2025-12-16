@@ -932,8 +932,6 @@
         function processStaffData(data) {
             if (!data || !Array.isArray(data)) return;
 
-            // Extract staff-related data from the webhook response
-            // Assuming the data might contain staff information or we'll derive it from invoice data
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             yesterday.setHours(0, 0, 0, 0);
@@ -942,45 +940,86 @@
             const startDate = new Date(endDate);
             startDate.setDate(startDate.getDate() - 364);
 
-            const staffDailyData = [];
+            // Check if data contains staff information (has staffid or staff_name)
+            const hasStaffData = data.some(item => item.staffid || item.staff_name);
             
-            // Process data - if staff data exists in the response, use it
-            // Otherwise, derive staff metrics from invoice data (e.g., assuming staff hours correlate with invoices)
+            if (!hasStaffData) {
+                console.log('No staff data found in webhook response');
+                return;
+            }
+
+            // Group staff data by date (month_start)
+            const staffByDate = {};
+            const staffMembers = new Set();
+
             data.forEach(item => {
-                if (item.txn_day) {
-                    const date = new Date(item.txn_day + 'T00:00:00');
-                    if (date <= endDate) {
-                        // If staff data exists in the response, use it
-                        // Otherwise, estimate from invoice data
-                        const invoices = item.invoices || 0;
-                        const revenue = item.revenue || 0;
+                if (item.month_start && (item.staffid || item.staff_name)) {
+                    const dateStr = item.month_start;
+                    const date = new Date(dateStr + 'T00:00:00');
+                    
+                    if (date <= endDate && date >= startDate) {
+                        if (!staffByDate[dateStr]) {
+                            staffByDate[dateStr] = {
+                                date: date,
+                                staff: [],
+                                totalInvoices: 0,
+                                totalLines: 0,
+                                totalRevenue: 0,
+                                staffCount: 0
+                            };
+                        }
+
+                        const staffMember = {
+                            staffid: item.staffid || '',
+                            staff_name: item.staff_name || `${item.firstname || ''} ${item.lastname || ''}`.trim(),
+                            invoices_touched: item.invoices_touched || 0,
+                            lines: item.lines || 0,
+                            revenue: item.revenue || 0,
+                            avg_revenue_per_line: item.avg_revenue_per_line || 0
+                        };
+
+                        staffByDate[dateStr].staff.push(staffMember);
+                        staffByDate[dateStr].totalInvoices += staffMember.invoices_touched;
+                        staffByDate[dateStr].totalLines += staffMember.lines;
+                        staffByDate[dateStr].totalRevenue += staffMember.revenue;
+                        staffByDate[dateStr].staffCount = staffByDate[dateStr].staff.length;
                         
-                        // Estimate staff metrics (this can be adjusted based on actual data structure)
-                        const estimatedStaff = Math.max(1, Math.ceil(invoices / 20)); // Assume ~20 invoices per staff member
-                        const estimatedHours = estimatedStaff * 8; // Assume 8 hours per staff member
-                        const productivity = invoices > 0 ? revenue / invoices : 0;
-                        
-                        staffDailyData.push({
-                            date: date,
-                            staffCount: item.staff_count || estimatedStaff,
-                            totalHours: item.total_hours || estimatedHours,
-                            avgHours: item.avg_hours || (estimatedHours / estimatedStaff),
-                            productivity: item.productivity || productivity,
-                            invoices: invoices,
-                            revenue: revenue
-                        });
+                        staffMembers.add(staffMember.staffid || staffMember.staff_name);
                     }
                 }
             });
 
+            // Convert to daily array format
+            const staffDailyData = Object.values(staffByDate).map(dayData => {
+                const avgHours = dayData.staffCount > 0 ? 8 : 0; // Assume 8 hours per staff member
+                const totalHours = dayData.staffCount * avgHours;
+                const productivity = totalHours > 0 ? dayData.totalRevenue / totalHours : 0;
+                
+                return {
+                    date: dayData.date,
+                    staffCount: dayData.staffCount,
+                    totalHours: totalHours,
+                    avgHours: avgHours,
+                    totalInvoices: dayData.totalInvoices,
+                    totalLines: dayData.totalLines,
+                    totalRevenue: dayData.totalRevenue,
+                    productivity: productivity,
+                    staff: dayData.staff
+                };
+            }).sort((a, b) => a.date - b.date);
+
             staffData = {
-                dailyData: staffDailyData.sort((a, b) => a.date - b.date),
+                dailyData: staffDailyData,
+                staffMembers: Array.from(staffMembers),
+                totalStaff: staffMembers.size,
                 totalHours: staffDailyData.reduce((sum, d) => sum + (d.totalHours || 0), 0),
                 totalStaffDays: staffDailyData.reduce((sum, d) => sum + (d.staffCount || 0), 0),
                 avgHoursPerStaff: staffDailyData.length > 0 
                     ? staffDailyData.reduce((sum, d) => sum + (d.avgHours || 0), 0) / staffDailyData.length 
                     : 0
             };
+
+            console.log('Processed staff data:', staffData);
         }
 
         // Update Staff KPI Cards
@@ -1088,12 +1127,12 @@
             
             if (staffHoursChart) staffHoursChart.destroy();
             
-            const recentData = staffData.dailyData.slice(-90); // Last 90 days
+            const recentData = staffData.dailyData.slice(-12); // Last 12 months
             
             staffHoursChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: recentData.map(d => d.date.toLocaleDateString()),
+                    labels: recentData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
                     datasets: [{
                         label: 'Total Hours',
                         data: recentData.map(d => d.totalHours),
@@ -1206,22 +1245,47 @@
             
             if (topStaffChart) topStaffChart.destroy();
             
-            // Group by date and calculate productivity (revenue per hour)
-            const productivityByDate = staffData.dailyData.map(d => ({
-                date: d.date,
-                productivity: d.totalHours > 0 ? d.revenue / d.totalHours : 0,
-                hours: d.totalHours
+            // Aggregate staff performance across all dates
+            const staffPerformance = {};
+            
+            staffData.dailyData.forEach(dayData => {
+                if (dayData.staff && Array.isArray(dayData.staff)) {
+                    dayData.staff.forEach(staff => {
+                        const staffKey = staff.staffid || staff.staff_name;
+                        if (!staffPerformance[staffKey]) {
+                            staffPerformance[staffKey] = {
+                                name: staff.staff_name,
+                                totalInvoices: 0,
+                                totalRevenue: 0,
+                                totalLines: 0,
+                                count: 0
+                            };
+                        }
+                        staffPerformance[staffKey].totalInvoices += staff.invoices_touched || 0;
+                        staffPerformance[staffKey].totalRevenue += staff.revenue || 0;
+                        staffPerformance[staffKey].totalLines += staff.lines || 0;
+                        staffPerformance[staffKey].count++;
+                    });
+                }
+            });
+            
+            // Calculate average revenue per staff member
+            const staffList = Object.values(staffPerformance).map(staff => ({
+                name: staff.name,
+                avgRevenue: staff.count > 0 ? staff.totalRevenue / staff.count : 0,
+                totalInvoices: staff.totalInvoices,
+                totalRevenue: staff.totalRevenue
             }));
             
-            const sorted = [...productivityByDate].sort((a, b) => b.productivity - a.productivity).slice(0, 10);
+            const sorted = [...staffList].sort((a, b) => b.avgRevenue - a.avgRevenue).slice(0, 10);
             
             topStaffChart = new Chart(ctx.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: sorted.map(item => item.date.toLocaleDateString()),
+                    labels: sorted.map(item => item.name),
                     datasets: [{
-                        label: 'Productivity ($/hr)',
-                        data: sorted.map(item => item.productivity),
+                        label: 'Avg Revenue',
+                        data: sorted.map(item => item.avgRevenue),
                         backgroundColor: '#10b981'
                     }]
                 },
@@ -1237,7 +1301,13 @@
                             bodyColor: '#f1f5f9',
                             callbacks: {
                                 label: function(context) {
-                                    return '$' + context.parsed.x.toFixed(2) + '/hr';
+                                    const index = context.dataIndex;
+                                    const staff = sorted[index];
+                                    return [
+                                        'Avg Revenue: $' + context.parsed.x.toFixed(2),
+                                        'Total Revenue: $' + staff.totalRevenue.toLocaleString(),
+                                        'Invoices: ' + staff.totalInvoices
+                                    ];
                                 }
                             }
                         }
@@ -1268,15 +1338,15 @@
             
             if (staffProductivityChart) staffProductivityChart.destroy();
             
-            const recentData = staffData.dailyData.slice(-30);
+            const recentData = staffData.dailyData.slice(-12); // Last 12 months
             const productivity = recentData.map(d => 
-                d.totalHours > 0 ? d.revenue / d.totalHours : 0
+                d.totalHours > 0 ? d.totalRevenue / d.totalHours : 0
             );
             
             staffProductivityChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: recentData.map(d => d.date.toLocaleDateString()),
+                    labels: recentData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
                     datasets: [{
                         label: 'Productivity ($/hr)',
                         data: productivity,
@@ -1385,16 +1455,16 @@
             
             if (staffEfficiencyChart) staffEfficiencyChart.destroy();
             
-            const recentData = staffData.dailyData.slice(-30);
+            const recentData = staffData.dailyData.slice(-12); // Last 12 months
             const efficiency = recentData.map(d => {
                 // Efficiency = invoices per staff hour
-                return d.totalHours > 0 ? (d.invoices / d.totalHours) * 10 : 0;
+                return d.totalHours > 0 ? (d.totalInvoices / d.totalHours) * 10 : 0;
             });
             
             staffEfficiencyChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: recentData.map(d => d.date.toLocaleDateString()),
+                    labels: recentData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
                     datasets: [{
                         label: 'Efficiency (invoices per 10 staff hours)',
                         data: efficiency,
