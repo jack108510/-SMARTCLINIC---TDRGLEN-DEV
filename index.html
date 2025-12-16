@@ -75,6 +75,48 @@
             align-items: center;
         }
 
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            background: var(--bg-secondary);
+            padding: 8px;
+            border-radius: 12px;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Page Containers */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
         .status-badge {
             display: flex;
             align-items: center;
@@ -505,7 +547,15 @@
             </div>
         </div>
 
-        <!-- KPI Cards -->
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showPage('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="showPage('charts')">📈 Charts & Analytics</button>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page active">
+            <!-- KPI Cards -->
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-header">
