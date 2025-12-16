@@ -1477,6 +1477,442 @@
         function updateChart(dailyData) {
             // Legacy function - use comparison function with no comparisons
             updateChartWithComparisons(dailyData, []);
+            // Also update analytics charts
+            if (fullInvoiceData) {
+                updateAnalyticsCharts(dailyData);
+            }
+        }
+
+        function updateAnalyticsCharts(data) {
+            if (!data || data.length === 0) return;
+
+            // Day of Week Analysis
+            updateDayOfWeekChart(data);
+            
+            // Monthly Trends
+            updateMonthlyChart(data);
+            
+            // Revenue vs Invoices
+            updateRevenueVsInvoicesChart(data);
+            
+            // Growth Rate
+            updateGrowthChart(data);
+            
+            // Top Days
+            updateTopDaysChart(data);
+            
+            // Average Revenue per Invoice
+            updateAvgRevenueChart(data);
+        }
+
+        function updateDayOfWeekChart(data) {
+            const ctx = document.getElementById('dayOfWeekChart');
+            if (!ctx) return;
+
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayStats = [0, 0, 0, 0, 0, 0, 0];
+            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+
+            data.forEach(item => {
+                const dayOfWeek = item.date.getDay();
+                dayStats[dayOfWeek] += item.count;
+                dayCounts[dayOfWeek]++;
+            });
+
+            const averages = dayStats.map((total, idx) => dayCounts[idx] > 0 ? total / dayCounts[idx] : 0);
+
+            if (dayOfWeekChart) {
+                dayOfWeekChart.destroy();
+            }
+
+            dayOfWeekChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dayNames,
+                    datasets: [{
+                        label: 'Average Invoices',
+                        data: averages,
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(16, 185, 129, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMonthlyChart(data) {
+            const ctx = document.getElementById('monthlyChart');
+            if (!ctx) return;
+
+            const monthlyData = new Map();
+            data.forEach(item => {
+                const monthKey = `${item.date.getFullYear()}-${String(item.date.getMonth() + 1).padStart(2, '0')}`;
+                const monthLabel = item.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                if (!monthlyData.has(monthKey)) {
+                    monthlyData.set(monthKey, { label: monthLabel, invoices: 0, revenue: 0 });
+                }
+                const month = monthlyData.get(monthKey);
+                month.invoices += item.count;
+                month.revenue += (item.revenue || 0);
+            });
+
+            const sortedMonths = Array.from(monthlyData.entries()).sort();
+            const labels = sortedMonths.map(([key, data]) => data.label);
+            const invoices = sortedMonths.map(([key, data]) => data.invoices);
+
+            if (monthlyChart) {
+                monthlyChart.destroy();
+            }
+
+            monthlyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invoices',
+                        data: invoices,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRevenueVsInvoicesChart(data) {
+            const ctx = document.getElementById('revenueVsInvoicesChart');
+            if (!ctx) return;
+
+            const hasRevenue = data.some(d => d.revenue !== undefined && d.revenue > 0);
+            if (!hasRevenue) {
+                if (revenueVsInvoicesChart) {
+                    revenueVsInvoicesChart.destroy();
+                }
+                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">No revenue data available</div>';
+                return;
+            }
+
+            const labels = data.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const invoices = data.map(d => d.count);
+            const revenues = data.map(d => d.revenue || 0);
+
+            if (revenueVsInvoicesChart) {
+                revenueVsInvoicesChart.destroy();
+            }
+
+            revenueVsInvoicesChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invoices',
+                        data: invoices,
+                        backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Revenue',
+                        data: revenues,
+                        type: 'line',
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Invoices'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Revenue ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 0 });
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateGrowthChart(data) {
+            const ctx = document.getElementById('growthChart');
+            if (!ctx) return;
+
+            if (data.length < 2) {
+                if (growthChart) {
+                    growthChart.destroy();
+                }
+                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">Insufficient data for growth calculation</div>';
+                return;
+            }
+
+            const sortedData = [...data].sort((a, b) => a.date - b.date);
+            const growthRates = [];
+            const labels = [];
+
+            for (let i = 1; i < sortedData.length; i++) {
+                const prev = sortedData[i - 1].count;
+                const curr = sortedData[i].count;
+                const growth = prev > 0 ? ((curr - prev) / prev) * 100 : 0;
+                growthRates.push(growth);
+                labels.push(sortedData[i].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            }
+
+            if (growthChart) {
+                growthChart.destroy();
+            }
+
+            growthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Growth Rate (%)',
+                        data: growthRates,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3
+                    }, {
+                        label: 'Zero Line',
+                        data: new Array(growthRates.length).fill(0),
+                        borderColor: '#e5e7eb',
+                        borderWidth: 1,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Growth Rate (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopDaysChart(data) {
+            const ctx = document.getElementById('topDaysChart');
+            if (!ctx) return;
+
+            const sortedData = [...data]
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10)
+                .reverse();
+
+            const labels = sortedData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const counts = sortedData.map(d => d.count);
+
+            if (topDaysChart) {
+                topDaysChart.destroy();
+            }
+
+            topDaysChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invoices',
+                        data: counts,
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAvgRevenueChart(data) {
+            const ctx = document.getElementById('avgRevenueChart');
+            if (!ctx) return;
+
+            const hasRevenue = data.some(d => d.revenue !== undefined && d.revenue > 0);
+            if (!hasRevenue) {
+                if (avgRevenueChart) {
+                    avgRevenueChart.destroy();
+                }
+                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">No revenue data available</div>';
+                return;
+            }
+
+            const avgRevenuePerInvoice = data
+                .filter(d => d.count > 0 && d.revenue > 0)
+                .map(d => ({
+                    date: d.date,
+                    avg: d.revenue / d.count
+                }));
+
+            if (avgRevenuePerInvoice.length === 0) {
+                if (avgRevenueChart) {
+                    avgRevenueChart.destroy();
+                }
+                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">No data available</div>';
+                return;
+            }
+
+            const labels = avgRevenuePerInvoice.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            const averages = avgRevenuePerInvoice.map(d => d.avg);
+
+            if (avgRevenueChart) {
+                avgRevenueChart.destroy();
+            }
+
+            avgRevenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Avg Revenue per Invoice',
+                        data: averages,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Revenue per Invoice ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function showChartMessage(message) {
