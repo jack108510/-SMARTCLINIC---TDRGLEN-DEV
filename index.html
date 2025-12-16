@@ -889,6 +889,8 @@
 
         // Fetch Data from Webhook
         async function fetchData() {
+            console.log('=== FETCH DATA START ===');
+            console.log('Webhook URL:', invoiceDataWebhookUrl);
             updateConnectionStatus(true, 'connecting');
             
             try {
@@ -905,12 +907,44 @@
                 }
 
                 const data = await response.json();
+                console.log('=== DATA RECEIVED FROM WEBHOOK ===');
+                console.log('Data type:', typeof data);
+                console.log('Is array:', Array.isArray(data));
+                console.log('Data length:', Array.isArray(data) ? data.length : 'N/A');
+                console.log('Full data:', data);
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log('First item keys:', Object.keys(data[0]));
+                    console.log('First item sample:', data[0]);
+                    console.log('Sample of first 3 items:', data.slice(0, 3));
+                    
+                    // Check for staff data indicators
+                    const hasStaffFields = data.some(item => 
+                        item.staffid || item.staff_name || item.month_start || item.firstname || item.lastname
+                    );
+                    console.log('Has staff-related fields:', hasStaffFields);
+                    
+                    if (hasStaffFields) {
+                        const staffItems = data.filter(item => 
+                            item.staffid || item.staff_name || item.month_start
+                        );
+                        console.log('Number of items with staff fields:', staffItems.length);
+                        if (staffItems.length > 0) {
+                            console.log('Sample staff item:', staffItems[0]);
+                        }
+                    }
+                }
+                
                 displayData(data);
                 updateConnectionStatus(true, 'connected');
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('=== ERROR FETCHING DATA ===');
+                console.error('Error type:', error.constructor.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
                 updateConnectionStatus(false);
             }
+            console.log('=== FETCH DATA END ===');
         }
 
         // Process and Display Data
