@@ -769,6 +769,9 @@
                 // Store full data for filtering
                 fullInvoiceData = invoiceData;
                 
+                // Update KPI cards with yesterday's data
+                updateKPICards(data);
+                
                 // Display data for current period
                 updateDisplayForPeriod(currentPeriod);
                 
