@@ -879,6 +879,47 @@
         let staffHoursDistributionChart = null;
         let staffEfficiencyChart = null;
 
+        // Navigation Functions
+        function showPage(pageId, buttonElement) {
+            console.log('showPage called with:', pageId);
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected page
+            const page = document.getElementById(pageId + 'Page');
+            if (page) {
+                page.classList.add('active');
+                console.log('Showing page:', pageId + 'Page');
+            } else {
+                console.error('Page not found:', pageId + 'Page');
+            }
+            
+            // Add active class to clicked tab
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            } else if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // If showing charts page, ensure charts are rendered
+            if (pageId === 'charts' && fullInvoiceData) {
+                setTimeout(() => {
+                    updateDisplayForPeriod(currentPeriod);
+                    if (staffData && staffData.dailyData && staffData.dailyData.length > 0) {
+                        updateStaffCharts();
+                    }
+                }, 100);
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             setupAutoRefresh();
