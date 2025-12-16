@@ -473,10 +473,9 @@
 
         async function fetchData() {
             updateConnectionStatus(true, 'connecting');
-            const dataContent = document.getElementById('dataContent');
-            dataContent.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading invoice data...</p></div>';
 
             try {
+                console.log('Fetching data from:', invoiceDataWebhookUrl);
                 const response = await fetch(invoiceDataWebhookUrl, {
                     method: 'GET',
                     headers: {
@@ -498,40 +497,16 @@
                 console.error('Error fetching data:', error);
                 updateConnectionStatus(false);
                 
-                let errorMessage = error.message;
-                let errorDetails = '';
-                
-                // Check for CORS errors
-                if (error.message.includes('CORS') || error.message.includes('Failed to fetch') || 
-                    error.message.includes('Access-Control-Allow-Origin')) {
-                    errorMessage = 'CORS Error: Cannot fetch data from webhook';
-                    errorDetails = `
-                        <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-                            <strong>⚠️ CORS Policy Error</strong>
-                            <p style="margin: 10px 0;">This error occurs when opening the HTML file directly from your computer. 
-                            You need to run a local web server instead.</p>
-                            <p style="margin: 10px 0;"><strong>Solution:</strong></p>
-                            <ol style="margin-left: 20px; margin-top: 10px;">
-                                <li>Open Terminal</li>
-                                <li>Navigate to this folder: <code>cd "Tudor Glen - Dev server"</code></li>
-                                <li>Run: <code>python3 server.py</code></li>
-                                <li>Open <code>http://localhost:8000</code> in your browser</li>
-                            </ol>
-                            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
-                                See README.md for more options (Node.js, PHP, etc.)
-                            </p>
-                        </div>
-                    `;
-                } else {
-                    errorDetails = `<br><small>Make sure the webhook URL is correct and accessible.</small>`;
+                // Show error in connection status
+                const connectionText = document.getElementById('connectionText');
+                if (connectionText) {
+                    let errorMessage = 'Connection Error';
+                    if (error.message.includes('CORS') || error.message.includes('Failed to fetch') || 
+                        error.message.includes('Access-Control-Allow-Origin')) {
+                        errorMessage = 'CORS Error - Use local server';
+                    }
+                    connectionText.textContent = errorMessage;
                 }
-                
-                dataContent.innerHTML = `
-                    <div class="error-message">
-                        <strong>Error:</strong> ${errorMessage}
-                        ${errorDetails}
-                    </div>
-                `;
             }
         }
 
@@ -550,15 +525,11 @@
                 updateDisplayForPeriod(currentPeriod);
             } catch (error) {
                 console.error('Error displaying data:', error);
-                const dataContent = document.getElementById('dataContent');
-                dataContent.innerHTML = `
-                    <div class="error-message">
-                        <strong>Error processing data:</strong> ${error.message}
-                        <br><br>
-                        <strong>Raw data received:</strong>
-                        <pre style="background: white; padding: 15px; border-radius: 8px; overflow-x: auto; margin-top: 10px;">${JSON.stringify(data, null, 2)}</pre>
-                    </div>
-                `;
+                updateConnectionStatus(false);
+                const connectionText = document.getElementById('connectionText');
+                if (connectionText) {
+                    connectionText.textContent = 'Error processing data';
+                }
             }
         }
 
