@@ -708,6 +708,9 @@
                 
                 // Display data for current period
                 updateDisplayForPeriod(currentPeriod);
+                
+                // Fetch AI suggestions when new data is loaded
+                fetchAISuggestions();
             } catch (error) {
                 console.error('Error displaying data:', error);
                 updateConnectionStatus(false);
