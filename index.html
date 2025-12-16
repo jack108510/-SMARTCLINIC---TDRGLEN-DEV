@@ -1116,6 +1116,116 @@
             console.log('=== FETCH STAFF DATA END ===');
         }
 
+        // AI Query Assistant
+        async function sendQuery() {
+            const queryInput = document.getElementById('aiQueryInput');
+            const chatContainer = document.getElementById('aiChat');
+            
+            if (!queryInput || !chatContainer) {
+                console.error('AI chat elements not found');
+                return;
+            }
+
+            const query = queryInput.value.trim();
+            if (!query) {
+                return;
+            }
+
+            // Add user message to chat
+            addChatMessage('user', query);
+            queryInput.value = '';
+
+            // Show loading message
+            const loadingId = addChatMessage('assistant', 'Thinking...', true);
+
+            try {
+                // Prepare data to send
+                const requestData = {
+                    query: query,
+                    timestamp: new Date().toISOString(),
+                    invoiceData: fullInvoiceData,
+                    staffData: staffData
+                };
+
+                console.log('Sending AI query:', query);
+                console.log('Request data:', requestData);
+
+                const response = await fetch(aiWebhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('AI response:', data);
+
+                // Remove loading message
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) {
+                    loadingEl.remove();
+                }
+
+                // Add AI response
+                const responseText = data.response || data.message || data.text || JSON.stringify(data);
+                addChatMessage('assistant', responseText);
+
+            } catch (error) {
+                console.error('Error sending query:', error);
+                
+                // Remove loading message
+                const loadingEl = document.getElementById(loadingId);
+                if (loadingEl) {
+                    loadingEl.remove();
+                }
+
+                // Add error message
+                addChatMessage('assistant', `Error: ${error.message}. Please try again.`);
+            }
+        }
+
+        function addChatMessage(role, message, isLoading = false) {
+            const chatContainer = document.getElementById('aiChat');
+            if (!chatContainer) return null;
+
+            // Remove welcome message if it exists
+            const welcomeMsg = chatContainer.querySelector('div[style*="text-align: center"]');
+            if (welcomeMsg) {
+                welcomeMsg.remove();
+            }
+
+            const messageId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            const messageEl = document.createElement('div');
+            messageEl.id = messageId;
+            messageEl.style.cssText = `
+                margin-bottom: 16px;
+                padding: 12px 16px;
+                border-radius: 12px;
+                max-width: 80%;
+                ${role === 'user' 
+                    ? 'background: var(--primary); color: white; margin-left: auto; text-align: right;' 
+                    : 'background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border);'
+                }
+            `;
+
+            if (isLoading) {
+                messageEl.innerHTML = '<span style="opacity: 0.7;">⏳ ' + message + '</span>';
+            } else {
+                messageEl.textContent = message;
+            }
+
+            chatContainer.appendChild(messageEl);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            return messageId;
+        }
+
         // Process and Display Data
         function displayData(data) {
             console.log('=== DISPLAY DATA START ===');
