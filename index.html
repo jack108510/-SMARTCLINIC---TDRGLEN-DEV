@@ -787,6 +787,7 @@
     <script>
         // Webhook Configuration
         const INVOICE_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/60e42850-6593-4d18-a4c7-c38293d1d768';
+        const STAFF_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/15ae819e-7e5b-4db7-bcc0-2094eda868ff';
         const AI_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a772-48c2040cfc83';
         const CORS_PROXY = 'https://corsproxy.io/?';
         
@@ -797,6 +798,9 @@
         const invoiceDataWebhookUrl = (isFileProtocol || isGitHubPages)
             ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(INVOICE_WEBHOOK) : INVOICE_WEBHOOK)
             : '/proxy/invoice';
+        const staffDataWebhookUrl = (isFileProtocol || isGitHubPages)
+            ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(STAFF_WEBHOOK) : STAFF_WEBHOOK)
+            : '/proxy/staff';
         const aiWebhookUrl = (isFileProtocol || isGitHubPages)
             ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(AI_WEBHOOK) : AI_WEBHOOK)
             : '/proxy/ai';
@@ -832,6 +836,7 @@
         function openSettings() {
             document.getElementById('settingsModal').classList.add('active');
             document.getElementById('invoiceWebhookUrl').value = INVOICE_WEBHOOK;
+            document.getElementById('staffWebhookUrl').value = STAFF_WEBHOOK;
             document.getElementById('aiWebhookUrl').value = AI_WEBHOOK;
         }
 
