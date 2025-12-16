@@ -1726,10 +1726,12 @@
             if (data.avg30d !== null && data.avg30d !== undefined && data.value !== null) {
                 const change = calculatePercentageChange(data.avg30d, data.value);
                 // For staff analytics, show "vs 12-Month Avg" instead of "vs 30-Day Avg"
-                const label = document.getElementById('staffTotalHours') ? 'vs 12-Month Avg' : 'vs 30-Day Avg';
+                const isStaffCard = valueId.startsWith('staff');
+                const label = isStaffCard ? 'vs 12-Month Avg' : 'vs 30-Day Avg';
                 comparisons.push({ label: label, value: change });
             } else {
-                const label = document.getElementById('staffTotalHours') ? 'vs 12-Month Avg' : 'vs 30-Day Avg';
+                const isStaffCard = valueId.startsWith('staff');
+                const label = isStaffCard ? 'vs 12-Month Avg' : 'vs 30-Day Avg';
                 comparisons.push({ label: label, value: null });
             }
 
