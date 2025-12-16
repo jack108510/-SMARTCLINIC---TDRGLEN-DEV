@@ -1015,6 +1015,11 @@
                 console.error('Error type:', error.constructor.name);
                 console.error('Error message:', error.message);
                 console.error('Error stack:', error.stack);
+                console.error('Staff webhook URL that failed:', staffDataWebhookUrl);
+                console.error('This error prevents staff data from loading. Please check:');
+                console.error('1. Is the staff webhook URL correct?');
+                console.error('2. Is the webhook accessible?');
+                console.error('3. Is CORS configured correctly?');
             }
             console.log('=== FETCH STAFF DATA END ===');
         }
