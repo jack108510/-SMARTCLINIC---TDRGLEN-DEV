@@ -2166,7 +2166,9 @@
             updateAvgRevenuePerInvoiceChart(mainData);
         }
 
-        function updateChartWithComparisons(mainData, comparisonDatasets, period = currentPeriod) {
+        function updateChartWithComparisons(mainData, comparisonDatasets, period) {
+            // Use provided period or fall back to currentPeriod or 'year'
+            const chartPeriod = period || currentPeriod || 'year';
             const ctx = document.getElementById('invoiceChart').getContext('2d');
             
             if (invoiceChart) {
@@ -2236,7 +2238,7 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: period === 'year' ? 'month' : period === 'month' ? 'day' : 'day'
+                                unit: chartPeriod === 'year' ? 'month' : chartPeriod === 'month' ? 'day' : 'day'
                             },
                             grid: {
                                 color: '#334155'
