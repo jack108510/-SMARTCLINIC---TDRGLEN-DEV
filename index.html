@@ -669,8 +669,8 @@
                         <span class="kpi-title">Total Staff Hours</span>
                         <span class="kpi-icon">⏰</span>
                     </div>
-                    <div class="kpi-value" id="staffTotalHours">-</div>
-                    <div class="kpi-label">Yesterday</div>
+                <div class="kpi-value" id="staffTotalHours">-</div>
+                <div class="kpi-label">Current Month</div>
                     <div class="kpi-comparisons" id="staffTotalHoursComparisons"></div>
                 </div>
                 <div class="kpi-card">
@@ -678,8 +678,8 @@
                         <span class="kpi-title">Active Staff Members</span>
                         <span class="kpi-icon">👤</span>
                     </div>
-                    <div class="kpi-value" id="staffActiveMembers">-</div>
-                    <div class="kpi-label">Yesterday</div>
+                <div class="kpi-value" id="staffActiveMembers">-</div>
+                <div class="kpi-label">Current Month</div>
                     <div class="kpi-comparisons" id="staffActiveMembersComparisons"></div>
                 </div>
                 <div class="kpi-card">
@@ -687,8 +687,8 @@
                         <span class="kpi-title">Avg Hours per Staff</span>
                         <span class="kpi-icon">📊</span>
                     </div>
-                    <div class="kpi-value" id="staffAvgHours">-</div>
-                    <div class="kpi-label">Yesterday</div>
+                <div class="kpi-value" id="staffAvgHours">-</div>
+                <div class="kpi-label">Current Month</div>
                     <div class="kpi-comparisons" id="staffAvgHoursComparisons"></div>
                 </div>
                 <div class="kpi-card">
@@ -696,8 +696,8 @@
                         <span class="kpi-title">Productivity Score</span>
                         <span class="kpi-icon">⚡</span>
                     </div>
-                    <div class="kpi-value" id="staffProductivity">-</div>
-                    <div class="kpi-label">Yesterday</div>
+                <div class="kpi-value" id="staffProductivity">-</div>
+                <div class="kpi-label">Current Month</div>
                     <div class="kpi-comparisons" id="staffProductivityComparisons"></div>
                 </div>
             </div>
@@ -1685,9 +1685,12 @@
 
             if (data.avg30d !== null && data.avg30d !== undefined && data.value !== null) {
                 const change = calculatePercentageChange(data.avg30d, data.value);
-                comparisons.push({ label: 'vs 30-Day Avg', value: change });
+                // For staff analytics, show "vs 12-Month Avg" instead of "vs 30-Day Avg"
+                const label = document.getElementById('staffTotalHours') ? 'vs 12-Month Avg' : 'vs 30-Day Avg';
+                comparisons.push({ label: label, value: change });
             } else {
-                comparisons.push({ label: 'vs 30-Day Avg', value: null });
+                const label = document.getElementById('staffTotalHours') ? 'vs 12-Month Avg' : 'vs 30-Day Avg';
+                comparisons.push({ label: label, value: null });
             }
 
             comparisonsEl.innerHTML = comparisons.map(comp => {
