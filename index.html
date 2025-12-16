@@ -1355,19 +1355,6 @@
                 }
             });
 
-            const datasets = [{
-                label: 'Invoices',
-                data: counts,
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 5,
-                yAxisID: 'y'
-            }];
-
             // Add revenue dataset if available
             if (hasRevenue && revenues) {
                 datasets.push({
