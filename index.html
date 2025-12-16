@@ -441,12 +441,20 @@
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const isGitHubPages = window.location.hostname.includes('github.io');
         
-        // Use proxy endpoints if running on local server, otherwise use direct URLs
+        // Webhook URLs
+        const INVOICE_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/60e42850-6593-4d18-a4c7-c38293d1d768';
+        const AI_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a772-48c2040cfc83';
+        
+        // CORS proxy for GitHub Pages (since webhook doesn't support CORS)
+        // Using corsproxy.io which supports POST requests
+        const CORS_PROXY = 'https://corsproxy.io/?';
+        
+        // Use proxy endpoints if running on local server, otherwise use direct URLs with CORS proxy for GitHub Pages
         const invoiceDataWebhookUrl = (isFileProtocol || isGitHubPages)
-            ? 'https://jackwilde.app.n8n.cloud/webhook/60e42850-6593-4d18-a4c7-c38293d1d768'
+            ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(INVOICE_WEBHOOK) : INVOICE_WEBHOOK)
             : '/proxy/invoice';
         const aiWebhookUrl = (isFileProtocol || isGitHubPages)
-            ? 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a772-48c2040cfc83'
+            ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(AI_WEBHOOK) : AI_WEBHOOK)
             : '/proxy/ai';
             
         let invoiceChart = null;
