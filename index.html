@@ -577,6 +577,12 @@
                 
                 // Display data for current period
                 updateDisplayForPeriod(currentPeriod);
+                
+                // Display weekly and monthly analytics
+                if (invoiceData.dailyData && invoiceData.dailyData.length > 0) {
+                    displayWeeklyAnalytics(invoiceData.dailyData);
+                    displayMonthlyAnalytics(invoiceData.dailyData);
+                }
             } catch (error) {
                 console.error('Error displaying data:', error);
                 const dataContent = document.getElementById('dataContent');
@@ -700,12 +706,6 @@
             } else {
                 const dataContent = document.getElementById('dataContent');
                 dataContent.innerHTML = '<div class="error-message">No invoice data found for the selected period.</div>';
-            }
-            
-            // Update weekly and monthly analytics
-            if (fullInvoiceData && fullInvoiceData.dailyData) {
-                displayWeeklyAnalytics(fullInvoiceData.dailyData);
-                displayMonthlyAnalytics(fullInvoiceData.dailyData);
             }
         }
 
