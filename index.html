@@ -1029,19 +1029,19 @@
                 console.log('Updating display for period:', currentPeriod);
                 updateDisplayForPeriod(currentPeriod);
                 
-                // Process staff data from the same webhook
-                console.log('=== PROCESSING STAFF DATA ===');
-                processStaffData(data);
-                console.log('Staff data processed, staffData:', staffData);
-                
-                if (staffData && staffData.dailyData && staffData.dailyData.length > 0) {
-                    console.log('Updating staff KPI cards...');
-                    updateStaffKPICards(data);
-                    console.log('Updating staff charts...');
-                    updateStaffCharts();
+                // Note: Staff data is now fetched separately via fetchStaffData()
+                // Only process staff data from invoice webhook if staff webhook hasn't loaded yet
+                if (!staffData || !staffData.dailyData || staffData.dailyData.length === 0) {
+                    console.log('No staff data from staff webhook yet, trying to extract from invoice data...');
+                    console.log('=== PROCESSING STAFF DATA FROM INVOICE WEBHOOK ===');
+                    processStaffData(data);
+                    if (staffData && staffData.dailyData && staffData.dailyData.length > 0) {
+                        console.log('Staff data extracted from invoice webhook, updating KPIs and charts...');
+                        updateStaffKPICards(data);
+                        updateStaffCharts();
+                    }
                 } else {
-                    console.warn('=== NO STAFF DATA TO DISPLAY ===');
-                    console.warn('staffData:', staffData);
+                    console.log('Staff data already loaded from staff webhook, skipping extraction from invoice data');
                 }
             } catch (error) {
                 console.error('=== ERROR IN DISPLAY DATA ===');
