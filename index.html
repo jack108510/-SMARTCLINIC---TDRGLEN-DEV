@@ -832,7 +832,8 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             setupAutoRefresh();
-            fetchData();
+            fetchData(); // Fetch invoice/financial data
+            fetchStaffData(); // Fetch staff data
             loadSettings();
         });
 
