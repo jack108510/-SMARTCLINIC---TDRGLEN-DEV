@@ -421,35 +421,6 @@
             </div>
         </div>
 
-        <div class="data-table">
-            <h2>📋 Invoice Data by Date</h2>
-            <div id="dataContent">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Loading invoice data...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="data-table">
-            <h2>📅 Weekly Analytics</h2>
-            <div id="weeklyContent">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Calculating weekly analytics...</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="data-table">
-            <h2>📆 Monthly Analytics</h2>
-            <div id="monthlyContent">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Calculating monthly analytics...</p>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -577,12 +548,6 @@
                 
                 // Display data for current period
                 updateDisplayForPeriod(currentPeriod);
-                
-                // Display weekly and monthly analytics
-                if (invoiceData.dailyData && invoiceData.dailyData.length > 0) {
-                    displayWeeklyAnalytics(invoiceData.dailyData);
-                    displayMonthlyAnalytics(invoiceData.dailyData);
-                }
             } catch (error) {
                 console.error('Error displaying data:', error);
                 const dataContent = document.getElementById('dataContent');
@@ -700,13 +665,7 @@
                 showChartMessage('No data available for the selected period.');
             }
             
-            // Display detailed data table
-            if (filteredData.length > 0) {
-                displayInvoiceTable(filteredData);
-            } else {
-                const dataContent = document.getElementById('dataContent');
-                dataContent.innerHTML = '<div class="error-message">No invoice data found for the selected period.</div>';
-            }
+            // Data tables removed - only showing summary cards
         }
 
         function processInvoiceData(data) {
