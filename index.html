@@ -1839,6 +1839,97 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
+
+        // Settings Functions
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = 'block';
+            
+            // Load current settings
+            const refreshInterval = localStorage.getItem('refreshInterval') || '30';
+            const autoRefreshEnabled = localStorage.getItem('autoRefreshEnabled') !== 'false';
+            const defaultPeriod = localStorage.getItem('defaultPeriod') || 'year';
+            
+            document.getElementById('refreshInterval').value = refreshInterval;
+            document.getElementById('autoRefreshEnabled').checked = autoRefreshEnabled;
+            document.getElementById('defaultPeriod').value = defaultPeriod;
+            
+            // Set webhook URLs (read-only)
+            document.getElementById('invoiceWebhookUrl').value = INVOICE_WEBHOOK;
+            document.getElementById('aiWebhookUrl').value = AI_WEBHOOK;
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = 'none';
+        }
+
+        function saveSettings() {
+            const refreshInterval = document.getElementById('refreshInterval').value;
+            const autoRefreshEnabled = document.getElementById('autoRefreshEnabled').checked;
+            const defaultPeriod = document.getElementById('defaultPeriod').value;
+            
+            // Validate refresh interval
+            const intervalNum = parseInt(refreshInterval, 10);
+            if (isNaN(intervalNum) || intervalNum < 10 || intervalNum > 3600) {
+                alert('Refresh interval must be between 10 and 3600 seconds');
+                return;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('refreshInterval', refreshInterval);
+            localStorage.setItem('autoRefreshEnabled', autoRefreshEnabled.toString());
+            localStorage.setItem('defaultPeriod', defaultPeriod);
+            
+            // Update auto-refresh
+            setupAutoRefresh();
+            
+            // Update default period if changed
+            if (defaultPeriod !== currentPeriod) {
+                filterByPeriod(defaultPeriod);
+            }
+            
+            // Close modal
+            closeSettings();
+            
+            // Show success message
+            const connectionText = document.getElementById('connectionText');
+            if (connectionText) {
+                const originalText = connectionText.textContent;
+                connectionText.textContent = 'Settings saved!';
+                connectionText.style.color = '#4ade80';
+                setTimeout(() => {
+                    connectionText.textContent = originalText;
+                    connectionText.style.color = '';
+                }, 2000);
+            }
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('settingsModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeSettings();
+                    }
+                });
+            }
+            
+            // Load default period from settings
+            const savedPeriod = localStorage.getItem('defaultPeriod') || 'year';
+            if (savedPeriod) {
+                currentPeriod = savedPeriod;
+                // Update button state
+                document.querySelectorAll('.period-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                const activeBtn = document.querySelector(`[data-period="${savedPeriod}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+            }
+        });
     </script>
 </body>
 </html>
