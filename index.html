@@ -589,8 +589,9 @@
         function updateDisplayForPeriod(period) {
             if (!fullInvoiceData) return;
             
-            // Calculate date range for selected period
+            // Calculate date range for selected period (ending yesterday)
             const endDate = new Date();
+            endDate.setDate(endDate.getDate() - 1); // Yesterday
             endDate.setHours(23, 59, 59, 999);
             const startDate = new Date(endDate);
             
@@ -620,16 +621,15 @@
             const totalInvoices = filteredData.reduce((sum, item) => sum + item.count, 0);
             const totalRevenue = filteredData.reduce((sum, item) => sum + (item.revenue || 0), 0);
             
-            // Count days in period
-            const daysInPeriod = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-            const avgPerDay = daysInPeriod > 0 ? totalInvoices / daysInPeriod : 0;
-            
-            // Calculate weekday and Saturday averages
+            // Calculate weekday and Saturday averages (excluding Sundays)
             const weekdayData = filteredData.filter(item => {
                 const dayOfWeek = item.date.getDay();
                 return dayOfWeek >= 1 && dayOfWeek <= 5;
             });
             const saturdayData = filteredData.filter(item => item.date.getDay() === 6);
+            
+            // Count days excluding Sundays
+            const daysExcludingSundays = filteredData.filter(item => item.date.getDay() !== 0).length;
             
             const weekdayInvoices = weekdayData.reduce((sum, item) => sum + item.count, 0);
             const saturdayInvoices = saturdayData.reduce((sum, item) => sum + item.count, 0);
@@ -637,6 +637,8 @@
             const weekdayDays = weekdayData.length;
             const saturdayDays = saturdayData.length;
             
+            // Calculate averages (excluding Sundays from avgPerDay)
+            const avgPerDay = daysExcludingSundays > 0 ? totalInvoices / daysExcludingSundays : 0;
             const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
             const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
             
@@ -682,8 +684,9 @@
         }
 
         function processInvoiceData(data) {
-            // Calculate date range (last 365 days)
+            // Calculate date range (last 365 days, ending yesterday)
             const endDate = new Date();
+            endDate.setDate(endDate.getDate() - 1); // Yesterday
             endDate.setHours(23, 59, 59, 999);
             const startDate = new Date(endDate);
             startDate.setDate(startDate.getDate() - 364);
@@ -785,9 +788,15 @@
                 }
             });
 
-            // Count weekday and Saturday days in range
+            // Count weekday and Saturday days in range (excluding Sundays)
+            let totalDaysExcludingSundays = 0;
             for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                 const dayOfWeek = d.getDay();
+                if (dayOfWeek === 0) {
+                    // Skip Sundays
+                    continue;
+                }
+                totalDaysExcludingSundays++;
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) {
                     weekdayDays++;
                 } else if (dayOfWeek === 6) {
@@ -799,9 +808,8 @@
             const dailyData = Array.from(dailyDataMap.values())
                 .sort((a, b) => a.date - b.date);
 
-            // Calculate averages
-            const totalDays = 365;
-            const avgPerDay = totalInvoices / totalDays;
+            // Calculate averages (excluding Sundays from avgPerDay)
+            const avgPerDay = totalDaysExcludingSundays > 0 ? totalInvoices / totalDaysExcludingSundays : 0;
             const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
             const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
 
@@ -883,9 +891,15 @@
                 }
             });
 
-            // Count weekday and Saturday days in range
+            // Count weekday and Saturday days in range (excluding Sundays)
+            let totalDaysExcludingSundays = 0;
             for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
                 const dayOfWeek = d.getDay();
+                if (dayOfWeek === 0) {
+                    // Skip Sundays
+                    continue;
+                }
+                totalDaysExcludingSundays++;
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) {
                     weekdayDays++;
                 } else if (dayOfWeek === 6) {
@@ -902,9 +916,8 @@
                 }))
                 .sort((a, b) => a.date - b.date);
 
-            // Calculate averages
-            const totalDays = 365;
-            const avgPerDay = totalInvoices / totalDays;
+            // Calculate averages (excluding Sundays from avgPerDay)
+            const avgPerDay = totalDaysExcludingSundays > 0 ? totalInvoices / totalDaysExcludingSundays : 0;
             const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
             const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
 
