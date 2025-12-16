@@ -2166,7 +2166,7 @@
             updateAvgRevenuePerInvoiceChart(mainData);
         }
 
-        function updateChartWithComparisons(mainData, comparisonDatasets) {
+        function updateChartWithComparisons(mainData, comparisonDatasets, period = currentPeriod) {
             const ctx = document.getElementById('invoiceChart').getContext('2d');
             
             if (invoiceChart) {
