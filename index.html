@@ -430,6 +430,26 @@
                 </div>
             </div>
         </div>
+
+        <div class="data-table">
+            <h2>📅 Weekly Analytics</h2>
+            <div id="weeklyContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Calculating weekly analytics...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="data-table">
+            <h2>📆 Monthly Analytics</h2>
+            <div id="monthlyContent">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Calculating monthly analytics...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -680,6 +700,12 @@
             } else {
                 const dataContent = document.getElementById('dataContent');
                 dataContent.innerHTML = '<div class="error-message">No invoice data found for the selected period.</div>';
+            }
+            
+            // Update weekly and monthly analytics
+            if (fullInvoiceData && fullInvoiceData.dailyData) {
+                displayWeeklyAnalytics(fullInvoiceData.dailyData);
+                displayMonthlyAnalytics(fullInvoiceData.dailyData);
             }
         }
 
@@ -1119,6 +1145,174 @@
 
             tableHTML += '</tbody></table>';
             dataContent.innerHTML = tableHTML;
+        }
+
+        function displayWeeklyAnalytics(dailyData) {
+            const weeklyContent = document.getElementById('weeklyContent');
+            
+            if (!dailyData || dailyData.length === 0) {
+                weeklyContent.innerHTML = '<div class="error-message">No data available for weekly analytics.</div>';
+                return;
+            }
+
+            // Group data by week
+            const weeklyMap = new Map();
+            
+            dailyData.forEach(item => {
+                if (!item.date) return;
+                
+                const date = new Date(item.date);
+                // Get the start of the week (Monday)
+                const weekStart = new Date(date);
+                const dayOfWeek = date.getDay();
+                const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
+                weekStart.setDate(diff);
+                weekStart.setHours(0, 0, 0, 0);
+                
+                const weekKey = weekStart.toISOString().split('T')[0];
+                
+                if (!weeklyMap.has(weekKey)) {
+                    weeklyMap.set(weekKey, {
+                        weekStart: new Date(weekStart),
+                        invoices: 0,
+                        revenue: 0,
+                        days: 0
+                    });
+                }
+                
+                const weekData = weeklyMap.get(weekKey);
+                weekData.invoices += item.count || 0;
+                weekData.revenue += item.revenue || 0;
+                weekData.days++;
+            });
+
+            // Convert to array and sort by week start date
+            const weeklyArray = Array.from(weeklyMap.values())
+                .sort((a, b) => b.weekStart - a.weekStart); // Most recent first
+
+            if (weeklyArray.length === 0) {
+                weeklyContent.innerHTML = '<div class="error-message">No weekly data available.</div>';
+                return;
+            }
+
+            const hasRevenue = weeklyArray.some(w => w.revenue > 0);
+            
+            let tableHTML = '<table><thead><tr><th>Week Starting</th><th>Week Ending</th><th>Days</th><th>Total Invoices</th>';
+            if (hasRevenue) {
+                tableHTML += '<th>Total Revenue</th><th>Avg Revenue/Day</th>';
+            }
+            tableHTML += '<th>Avg Invoices/Day</th></tr></thead><tbody>';
+
+            weeklyArray.forEach(week => {
+                const weekEnd = new Date(week.weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+                
+                const weekStartStr = week.weekStart.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                const weekEndStr = weekEnd.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                
+                const avgInvoices = week.days > 0 ? (week.invoices / week.days).toFixed(2) : '0.00';
+                const avgRevenue = week.days > 0 ? (week.revenue / week.days).toFixed(2) : '0.00';
+                
+                tableHTML += `<tr>
+                    <td><strong>${weekStartStr}</strong></td>
+                    <td>${weekEndStr}</td>
+                    <td>${week.days}</td>
+                    <td><strong>${week.invoices.toLocaleString()}</strong></td>`;
+                
+                if (hasRevenue) {
+                    tableHTML += `<td>$${week.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td>$${avgRevenue}</td>`;
+                }
+                
+                tableHTML += `<td>${avgInvoices}</td></tr>`;
+            });
+
+            tableHTML += '</tbody></table>';
+            weeklyContent.innerHTML = tableHTML;
+        }
+
+        function displayMonthlyAnalytics(dailyData) {
+            const monthlyContent = document.getElementById('monthlyContent');
+            
+            if (!dailyData || dailyData.length === 0) {
+                monthlyContent.innerHTML = '<div class="error-message">No data available for monthly analytics.</div>';
+                return;
+            }
+
+            // Group data by month
+            const monthlyMap = new Map();
+            
+            dailyData.forEach(item => {
+                if (!item.date) return;
+                
+                const date = new Date(item.date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const monthLabel = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                
+                if (!monthlyMap.has(monthKey)) {
+                    monthlyMap.set(monthKey, {
+                        monthLabel: monthLabel,
+                        month: date.getMonth(),
+                        year: date.getFullYear(),
+                        invoices: 0,
+                        revenue: 0,
+                        days: 0
+                    });
+                }
+                
+                const monthData = monthlyMap.get(monthKey);
+                monthData.invoices += item.count || 0;
+                monthData.revenue += item.revenue || 0;
+                monthData.days++;
+            });
+
+            // Convert to array and sort by date (most recent first)
+            const monthlyArray = Array.from(monthlyMap.values())
+                .sort((a, b) => {
+                    if (b.year !== a.year) return b.year - a.year;
+                    return b.month - a.month;
+                });
+
+            if (monthlyArray.length === 0) {
+                monthlyContent.innerHTML = '<div class="error-message">No monthly data available.</div>';
+                return;
+            }
+
+            const hasRevenue = monthlyArray.some(m => m.revenue > 0);
+            
+            let tableHTML = '<table><thead><tr><th>Month</th><th>Days</th><th>Total Invoices</th>';
+            if (hasRevenue) {
+                tableHTML += '<th>Total Revenue</th><th>Avg Revenue/Day</th>';
+            }
+            tableHTML += '<th>Avg Invoices/Day</th></tr></thead><tbody>';
+
+            monthlyArray.forEach(month => {
+                const avgInvoices = month.days > 0 ? (month.invoices / month.days).toFixed(2) : '0.00';
+                const avgRevenue = month.days > 0 ? (month.revenue / month.days).toFixed(2) : '0.00';
+                
+                tableHTML += `<tr>
+                    <td><strong>${month.monthLabel}</strong></td>
+                    <td>${month.days}</td>
+                    <td><strong>${month.invoices.toLocaleString()}</strong></td>`;
+                
+                if (hasRevenue) {
+                    tableHTML += `<td>$${month.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td>$${avgRevenue}</td>`;
+                }
+                
+                tableHTML += `<td>${avgInvoices}</td></tr>`;
+            });
+
+            tableHTML += '</tbody></table>';
+            monthlyContent.innerHTML = tableHTML;
         }
 
         function displaySummaryTable(invoiceData) {
