@@ -2907,7 +2907,200 @@
                         </div>
                     </div>
                 `;
+                }).join('');
+        }
+
+        function updateKPICards(data) {
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                console.warn('No data available for KPI cards');
+                return;
+            }
+
+            // Get yesterday's date (in local timezone)
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            // Get day before yesterday
+            const dayBefore = new Date(yesterday);
+            dayBefore.setDate(dayBefore.getDate() - 1);
+            const dayBeforeStr = dayBefore.toISOString().split('T')[0];
+
+            // Get same weekday last week
+            const lastWeek = new Date(yesterday);
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            const lastWeekStr = lastWeek.toISOString().split('T')[0];
+
+            // Find yesterday's data
+            const yesterdayData = data.find(d => d.txn_day === yesterdayStr);
+            const dayBeforeData = data.find(d => d.txn_day === dayBeforeStr);
+            const lastWeekData = data.find(d => d.txn_day === lastWeekStr);
+
+            // Calculate 30-day rolling average (excluding yesterday)
+            const thirtyDaysAgo = new Date(yesterday);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const avg30Days = calculate30DayAverage(data, yesterdayStr, thirtyDaysAgo.toISOString().split('T')[0]);
+
+            // Update each KPI card
+            updateKPICard('kpiRevenue', 'kpiRevenueComparisons', {
+                value: yesterdayData ? yesterdayData.revenue : null,
+                prevDay: dayBeforeData ? dayBeforeData.revenue : null,
+                lastWeek: lastWeekData ? lastWeekData.revenue : null,
+                avg30d: avg30Days.revenue
+            }, (val) => '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+            updateKPICard('kpiInvoices', 'kpiInvoicesComparisons', {
+                value: yesterdayData ? yesterdayData.invoices : null,
+                prevDay: dayBeforeData ? dayBeforeData.invoices : null,
+                lastWeek: lastWeekData ? lastWeekData.invoices : null,
+                avg30d: avg30Days.invoices
+            }, (val) => val.toLocaleString());
+
+            // Transactions = Invoices (based on data structure)
+            updateKPICard('kpiTransactions', 'kpiTransactionsComparisons', {
+                value: yesterdayData ? yesterdayData.invoices : null,
+                prevDay: dayBeforeData ? dayBeforeData.invoices : null,
+                lastWeek: lastWeekData ? lastWeekData.invoices : null,
+                avg30d: avg30Days.invoices
+            }, (val) => val.toLocaleString());
+
+            // Average Invoice Value = Revenue / Invoices
+            const avgInvoiceValue = yesterdayData && yesterdayData.invoices > 0 
+                ? yesterdayData.revenue / yesterdayData.invoices 
+                : null;
+            const avgInvoicePrevDay = dayBeforeData && dayBeforeData.invoices > 0
+                ? dayBeforeData.revenue / dayBeforeData.invoices
+                : null;
+            const avgInvoiceLastWeek = lastWeekData && lastWeekData.invoices > 0
+                ? lastWeekData.revenue / lastWeekData.invoices
+                : null;
+            const avgInvoice30d = avg30Days.invoices > 0
+                ? avg30Days.revenue / avg30Days.invoices
+                : null;
+
+            updateKPICard('kpiAvgInvoice', 'kpiAvgInvoiceComparisons', {
+                value: avgInvoiceValue,
+                prevDay: avgInvoicePrevDay,
+                lastWeek: avgInvoiceLastWeek,
+                avg30d: avgInvoice30d
+            }, (val) => '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        }
+
+        function calculate30DayAverage(data, excludeDate, startDate) {
+            const filtered = data.filter(d => {
+                return d.txn_day >= startDate && d.txn_day < excludeDate;
+            });
+
+            if (filtered.length === 0) {
+                return { revenue: null, invoices: null };
+            }
+
+            const totalRevenue = filtered.reduce((sum, d) => sum + (d.revenue || 0), 0);
+            const totalInvoices = filtered.reduce((sum, d) => sum + (d.invoices || 0), 0);
+
+            return {
+                revenue: totalRevenue / filtered.length,
+                invoices: totalInvoices / filtered.length
+            };
+        }
+
+        function updateKPICard(valueId, comparisonsId, data, formatter) {
+            const valueEl = document.getElementById(valueId);
+            const comparisonsEl = document.getElementById(comparisonsId);
+
+            if (!valueEl || !comparisonsEl) return;
+
+            // Update main value
+            if (data.value !== null && data.value !== undefined) {
+                valueEl.textContent = formatter(data.value);
+            } else {
+                valueEl.textContent = '—';
+            }
+
+            // Calculate and display comparisons
+            const comparisons = [];
+
+            // Day before yesterday
+            if (data.prevDay !== null && data.prevDay !== undefined && data.value !== null) {
+                const change = calculatePercentageChange(data.prevDay, data.value);
+                comparisons.push({
+                    label: 'vs Day Before',
+                    value: change,
+                    raw: data.prevDay
+                });
+            } else {
+                comparisons.push({
+                    label: 'vs Day Before',
+                    value: null
+                });
+            }
+
+            // Same weekday last week
+            if (data.lastWeek !== null && data.lastWeek !== undefined && data.value !== null) {
+                const change = calculatePercentageChange(data.lastWeek, data.value);
+                comparisons.push({
+                    label: 'vs Last Week',
+                    value: change,
+                    raw: data.lastWeek
+                });
+            } else {
+                comparisons.push({
+                    label: 'vs Last Week',
+                    value: null
+                });
+            }
+
+            // 30-day average
+            if (data.avg30d !== null && data.avg30d !== undefined && data.value !== null) {
+                const change = calculatePercentageChange(data.avg30d, data.value);
+                comparisons.push({
+                    label: 'vs 30-Day Avg',
+                    value: change,
+                    raw: data.avg30d
+                });
+            } else {
+                comparisons.push({
+                    label: 'vs 30-Day Avg',
+                    value: null
+                });
+            }
+
+            // Render comparisons
+            comparisonsEl.innerHTML = comparisons.map(comp => {
+                if (comp.value === null) {
+                    return `
+                        <div class="comparison-item">
+                            <span class="comparison-label">${comp.label}</span>
+                            <span class="comparison-value neutral">—</span>
+                        </div>
+                    `;
+                }
+
+                const absValue = Math.abs(comp.value);
+                let className = 'neutral';
+                let arrow = '→';
+                
+                if (absValue >= 1) {
+                    className = comp.value > 0 ? 'positive' : 'negative';
+                    arrow = comp.value > 0 ? '↑' : '↓';
+                }
+
+                return `
+                    <div class="comparison-item">
+                        <span class="comparison-label">${comp.label}</span>
+                        <span class="comparison-value ${className}">
+                            <span class="comparison-arrow">${arrow}</span>
+                            ${absValue.toFixed(1)}%
+                        </span>
+                    </div>
+                `;
             }).join('');
+        }
+
+        function calculatePercentageChange(oldValue, newValue) {
+            if (!oldValue || oldValue === 0) return null;
+            return ((newValue - oldValue) / oldValue) * 100;
         }
     </script>
 </body>
