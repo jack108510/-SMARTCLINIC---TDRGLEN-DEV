@@ -19,8 +19,22 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .main-content {
+            min-width: 0; /* Prevents grid overflow */
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
 
         .header {
@@ -541,7 +555,23 @@
                 <canvas id="invoiceChart"></canvas>
             </div>
         </div>
+        </div>
 
+        <!-- AI Suggestions Panel -->
+        <div class="ai-suggestions-panel">
+            <div class="suggestions-header">
+                <h2>🤖 AI Suggestions</h2>
+                <button id="refreshSuggestionsBtn" onclick="fetchAISuggestions()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 600;">
+                    🔄 Refresh
+                </button>
+            </div>
+            <div id="suggestionsContent" style="padding: 20px;">
+                <div style="text-align: center; color: #999; padding: 40px 20px;">
+                    <div style="font-size: 3em; margin-bottom: 15px;">💡</div>
+                    <p>Loading suggestions...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -2205,7 +2235,172 @@
                     activeBtn.classList.add('active');
                 }
             }
+
+            // Fetch AI suggestions on page load
+            fetchAISuggestions();
         });
+
+        // AI Suggestions Functions
+        async function fetchAISuggestions() {
+            const suggestionsContent = document.getElementById('suggestionsContent');
+            const refreshBtn = document.getElementById('refreshSuggestionsBtn');
+            
+            // Show loading state
+            suggestionsContent.innerHTML = `
+                <div class="suggestion-loading">
+                    <div style="font-size: 3em; margin-bottom: 15px;">💡</div>
+                    <p>Generating AI suggestions...</p>
+                </div>
+            `;
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = '⏳ Loading...';
+
+            try {
+                // Prepare data for AI suggestions
+                const suggestionData = {
+                    type: 'suggestions',
+                    invoiceData: fullInvoiceData ? {
+                        totalInvoices: fullInvoiceData.totalInvoices,
+                        totalRevenue: fullInvoiceData.totalRevenue,
+                        avgPerDay: fullInvoiceData.avgPerDay,
+                        avgPerWeekday: fullInvoiceData.avgPerWeekday,
+                        avgPerSaturday: fullInvoiceData.avgPerSaturday,
+                        dailyData: fullInvoiceData.dailyData.slice(-30) // Last 30 days for context
+                    } : null,
+                    currentPeriod: currentPeriod,
+                    timestamp: new Date().toISOString()
+                };
+
+                console.log('Fetching AI suggestions with data:', suggestionData);
+
+                // Determine webhook URL
+                const isFileProtocol = window.location.protocol === 'file:';
+                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                const CORS_PROXY = 'https://corsproxy.io/?';
+                const AI_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a4c7-c38293d1d768';
+                
+                const suggestionsUrl = (isFileProtocol || isGitHubPages)
+                    ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(AI_WEBHOOK) : AI_WEBHOOK)
+                    : '/proxy/ai';
+
+                // Send POST request to AI webhook
+                const response = await fetch(suggestionsUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(suggestionData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('AI suggestions response:', data);
+
+                // Parse and display suggestions
+                displaySuggestions(data);
+
+            } catch (error) {
+                console.error('Error fetching AI suggestions:', error);
+                suggestionsContent.innerHTML = `
+                    <div class="suggestion-error">
+                        <div style="font-size: 3em; margin-bottom: 15px;">⚠️</div>
+                        <p>Failed to load suggestions</p>
+                        <p style="font-size: 0.9em; margin-top: 10px; color: #999;">${error.message}</p>
+                        <button onclick="fetchAISuggestions()" style="margin-top: 15px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            } finally {
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = '🔄 Refresh';
+            }
+        }
+
+        function displaySuggestions(data) {
+            const suggestionsContent = document.getElementById('suggestionsContent');
+            
+            // Handle different response formats
+            let suggestions = [];
+            
+            if (Array.isArray(data)) {
+                suggestions = data;
+            } else if (data.suggestions && Array.isArray(data.suggestions)) {
+                suggestions = data.suggestions;
+            } else if (data.response) {
+                // If response is a string, try to parse it or create a single suggestion
+                try {
+                    const parsed = JSON.parse(data.response);
+                    suggestions = Array.isArray(parsed) ? parsed : (parsed.suggestions || [parsed]);
+                } catch (e) {
+                    suggestions = [{
+                        title: 'AI Insight',
+                        text: data.response,
+                        category: 'General',
+                        timestamp: new Date().toISOString()
+                    }];
+                }
+            } else if (data.message) {
+                suggestions = [{
+                    title: 'AI Insight',
+                    text: data.message,
+                    category: 'General',
+                    timestamp: new Date().toISOString()
+                }];
+            } else if (typeof data === 'string') {
+                suggestions = [{
+                    title: 'AI Insight',
+                    text: data,
+                    category: 'General',
+                    timestamp: new Date().toISOString()
+                }];
+            } else {
+                // Try to extract suggestions from the object
+                suggestions = Object.keys(data).map(key => ({
+                    title: key.charAt(0).toUpperCase() + key.slice(1),
+                    text: typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]),
+                    category: 'General',
+                    timestamp: new Date().toISOString()
+                }));
+            }
+
+            if (suggestions.length === 0) {
+                suggestionsContent.innerHTML = `
+                    <div class="suggestion-loading">
+                        <div style="font-size: 3em; margin-bottom: 15px;">💡</div>
+                        <p>No suggestions available at this time.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Display suggestions
+            suggestionsContent.innerHTML = suggestions.map((suggestion, index) => {
+                const title = suggestion.title || suggestion.heading || `Suggestion ${index + 1}`;
+                const text = suggestion.text || suggestion.content || suggestion.message || JSON.stringify(suggestion);
+                const category = suggestion.category || suggestion.type || 'General';
+                const timestamp = suggestion.timestamp ? new Date(suggestion.timestamp).toLocaleDateString() : 'Just now';
+                
+                return `
+                    <div class="suggestion-item">
+                        <div class="suggestion-title">
+                            <span>💡</span>
+                            <span>${title}</span>
+                        </div>
+                        <div class="suggestion-text">${text}</div>
+                        <div class="suggestion-meta">
+                            <span class="suggestion-category">${category}</span>
+                            <span>${timestamp}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
     </script>
 </body>
 </html>
