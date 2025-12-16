@@ -88,22 +88,35 @@
 
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             margin-bottom: 30px;
         }
 
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .card {
-            background: white;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
             border-radius: 12px;
             padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
+            color: white;
         }
 
         .card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
         }
 
         .card h2 {
@@ -463,29 +476,28 @@
 
         <div class="dashboard-grid">
             <div class="card">
-                <h2><span class="card-icon">📈</span> Total Invoices</h2>
-                <div class="stat-value" id="totalInvoices">-</div>
-                <div class="stat-label" id="totalInvoicesLabel">Invoices in the past year</div>
-            </div>
-            <div class="card">
                 <h2><span class="card-icon">💰</span> Total Revenue</h2>
-                <div class="stat-value" id="totalRevenue">-</div>
-                <div class="stat-label" id="totalRevenueLabel">Revenue in the past year</div>
+                <div class="stat-value" id="kpiRevenue">-</div>
+                <div class="stat-label">Yesterday</div>
+                <div class="comparisons" id="kpiRevenueComparisons"></div>
             </div>
             <div class="card">
-                <h2><span class="card-icon">📊</span> Avg Per Day</h2>
-                <div class="stat-value" id="avgPerDay">-</div>
-                <div class="stat-label">Average invoices per day</div>
+                <h2><span class="card-icon">📄</span> Number of Invoices</h2>
+                <div class="stat-value" id="kpiInvoices">-</div>
+                <div class="stat-label">Yesterday</div>
+                <div class="comparisons" id="kpiInvoicesComparisons"></div>
             </div>
             <div class="card">
-                <h2><span class="card-icon">📅</span> Avg Per Weekday</h2>
-                <div class="stat-value" id="avgPerWeekday">-</div>
-                <div class="stat-label">Average invoices per weekday</div>
+                <h2><span class="card-icon">🔄</span> Number of Transactions</h2>
+                <div class="stat-value" id="kpiTransactions">-</div>
+                <div class="stat-label">Yesterday</div>
+                <div class="comparisons" id="kpiTransactionsComparisons"></div>
             </div>
             <div class="card">
-                <h2><span class="card-icon">🗓️</span> Avg Per Saturday</h2>
-                <div class="stat-value" id="avgPerSaturday">-</div>
-                <div class="stat-label">Average invoices per Saturday</div>
+                <h2><span class="card-icon">📊</span> Average Invoice Value</h2>
+                <div class="stat-value" id="kpiAvgInvoice">-</div>
+                <div class="stat-label">Yesterday</div>
+                <div class="comparisons" id="kpiAvgInvoiceComparisons"></div>
             </div>
         </div>
 
