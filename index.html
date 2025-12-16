@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tudor Glen Invoice Dashboard</title>
+    <title>Tudor Glen Financial Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -11,74 +12,89 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
-            padding: 20px;
+            line-height: 1.6;
         }
 
-        .container {
-            max-width: 1600px;
+        .dashboard-container {
+            max-width: 1920px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 30px;
-            align-items: start;
+            padding: 24px;
         }
 
-        .main-content {
-            min-width: 0; /* Prevents grid overflow */
-        }
-
-        @media (max-width: 1200px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-
+        /* Header */
         .header {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
-            color: #333;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .status-bar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 40px var(--shadow);
             display: flex;
-            gap: 20px;
-            margin-top: 20px;
+            justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
+            gap: 20px;
         }
 
-        .status-item {
+        .header-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .header-content p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .status-badge {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.9rem;
         }
 
-        .status-indicator {
-            width: 12px;
-            height: 12px;
+        .status-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: #4ade80;
+            background: var(--success);
             animation: pulse 2s infinite;
         }
 
-        .status-indicator.error {
-            background: #f87171;
+        .status-dot.error {
+            background: var(--danger);
         }
 
         @keyframes pulse {
@@ -86,626 +102,698 @@
             50% { opacity: 0.5; }
         }
 
-        .dashboard-grid {
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: white;
+            color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px var(--shadow);
+            border-color: var(--primary);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .kpi-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-icon {
+            font-size: 1.5rem;
+        }
+
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .kpi-comparisons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .comparison-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .comparison-label {
+            color: var(--text-secondary);
+        }
+
+        .comparison-value {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .comparison-value.positive {
+            color: var(--success);
+        }
+
+        .comparison-value.negative {
+            color: var(--danger);
+        }
+
+        .comparison-value.neutral {
+            color: var(--text-secondary);
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
         @media (max-width: 1200px) {
-            .dashboard-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 600px) {
-            .dashboard-grid {
+            .charts-section {
                 grid-template-columns: 1fr;
             }
         }
 
-        .card {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-            color: white;
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
-        }
-
-        .card h2 {
-            color: #333;
-            font-size: 1.3em;
-            margin-bottom: 15px;
+        .chart-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            margin-bottom: 24px;
         }
 
-        .card-icon {
-            font-size: 1.5em;
-        }
-
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .chart-container h2 {
-            color: #333;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
-
-        .period-filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .period-btn {
-            padding: 10px 20px;
-            border: 2px solid #e0e0e0;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
-        .period-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
-        }
-
-        .period-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .chart-wrapper {
             position: relative;
             height: 400px;
-            width: 100%;
         }
 
-        canvas {
-            max-width: 100%;
-        }
-
-        .date-range {
-            color: #666;
-            font-size: 0.9em;
-            margin-bottom: 15px;
-        }
-
-        .data-table {
-            background: white;
+        .chart-controls {
+            background: var(--bg-secondary);
             border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow-x: auto;
-        }
-
-        .data-table h2 {
-            color: #333;
-            font-size: 1.5em;
+            padding: 20px;
             margin-bottom: 20px;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .control-group {
+            margin-bottom: 20px;
         }
 
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
+        .control-group:last-child {
+            margin-bottom: 0;
         }
 
-        th {
-            background: #f8f9fa;
-            color: #333;
+        .control-label {
+            display: block;
+            font-size: 0.875rem;
             font-weight: 600;
-            position: sticky;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .radio-option, .checkbox-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .radio-option:hover, .checkbox-option:hover {
+            border-color: var(--primary);
+            background: var(--bg-card);
+        }
+
+        .radio-option input[type="radio"],
+        .checkbox-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* Analytics Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .analytics-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .analytics-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .analytics-chart {
+            height: 300px;
+        }
+
+        /* Settings Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
             top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
         }
 
-        tr:hover {
-            background: #f8f9fa;
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-input[readonly] {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+        }
+
+        /* Loading State */
         .loading {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 40px;
-            color: #666;
+            color: var(--text-secondary);
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
-            border-radius: 50%;
             width: 40px;
             height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border-left: 4px solid #c33;
-        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 16px;
+            }
 
-        .ai-query {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
+            .header {
+                padding: 24px;
+            }
 
-        .ai-query h2 {
-            color: #333;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+            .header-content h1 {
+                font-size: 2rem;
+            }
 
-        .chat-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
 
-        .chat-messages {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            min-height: 200px;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            max-width: 80%;
-            word-wrap: break-word;
-        }
-
-        .message.user {
-            background: #667eea;
-            color: white;
-            margin-left: auto;
-            text-align: right;
-        }
-
-        .message.ai {
-            background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-        }
-
-        .message.loading {
-            background: #f0f0f0;
-            color: #666;
-            font-style: italic;
-        }
-
-        .query-input-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        .query-input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
-        }
-
-        .query-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .send-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background 0.2s;
-            white-space: nowrap;
-        }
-
-        .send-btn:hover:not(:disabled) {
-            background: #5568d3;
-        }
-
-        .send-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+            .analytics-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard-container">
+        <!-- Header -->
         <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <div>
-                    <h1>📊 Tudor Glen Invoice Dashboard</h1>
-                    <p>Invoice tracking and analytics for the past 365 days</p>
-                </div>
-                <button id="settingsBtn" onclick="openSettings()" style="background: #667eea; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;">
-                    ⚙️ Settings
-                </button>
+            <div class="header-content">
+                <h1>📊 Tudor Glen Financial Dashboard</h1>
+                <p>Real-time financial analytics and insights</p>
             </div>
-            <div class="status-bar">
-                <div class="status-item">
-                    <div class="status-indicator" id="connectionStatus"></div>
+            <div class="header-actions">
+                <div class="status-badge">
+                    <div class="status-dot" id="connectionStatus"></div>
                     <span id="connectionText">Connecting...</span>
                 </div>
-                <div class="status-item">
-                    <span>Last Update: <span id="lastUpdate">Never</span></span>
+                <button class="btn btn-primary" onclick="openSettings()">⚙️ Settings</button>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Total Revenue</span>
+                    <span class="kpi-icon">💰</span>
+                </div>
+                <div class="kpi-value" id="kpiRevenue">-</div>
+                <div class="kpi-label">Yesterday</div>
+                <div class="kpi-comparisons" id="kpiRevenueComparisons"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Number of Invoices</span>
+                    <span class="kpi-icon">📄</span>
+                </div>
+                <div class="kpi-value" id="kpiInvoices">-</div>
+                <div class="kpi-label">Yesterday</div>
+                <div class="kpi-comparisons" id="kpiInvoicesComparisons"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Number of Transactions</span>
+                    <span class="kpi-icon">🔄</span>
+                </div>
+                <div class="kpi-value" id="kpiTransactions">-</div>
+                <div class="kpi-label">Yesterday</div>
+                <div class="kpi-comparisons" id="kpiTransactionsComparisons"></div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-title">Average Invoice Value</span>
+                    <span class="kpi-icon">📊</span>
+                </div>
+                <div class="kpi-value" id="kpiAvgInvoice">-</div>
+                <div class="kpi-label">Yesterday</div>
+                <div class="kpi-comparisons" id="kpiAvgInvoiceComparisons"></div>
+            </div>
+        </div>
+
+        <!-- Main Charts Section -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h2 class="chart-title">📈 Revenue & Invoices Trend</h2>
+                </div>
+                <div class="chart-controls">
+                    <div class="control-group">
+                        <label class="control-label">View Period</label>
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="viewPeriod" value="today" onchange="updateComparison()">
+                                <span>Today</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="viewPeriod" value="week" onchange="updateComparison()">
+                                <span>This Week</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="viewPeriod" value="month" onchange="updateComparison()">
+                                <span>This Month</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="viewPeriod" value="year" onchange="updateComparison()" checked>
+                                <span>This Year</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Compare To</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="comparison" value="sameDayLastYear" onchange="updateComparison()">
+                                <span>Same Day Last Year</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="comparison" value="sameWeekLastYear" onchange="updateComparison()">
+                                <span>Same Week Last Year</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="comparison" value="sameMonthLastYear" onchange="updateComparison()">
+                                <span>Same Month Last Year</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="comparison" value="lastYear" onchange="updateComparison()">
+                                <span>Last Year</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="comparison" value="avgDay" onchange="updateComparison()">
+                                <span>Average Day</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="comparison" value="avgWeek" onchange="updateComparison()">
+                                <span>Average Week</span>
+                            </label>
+                            <label class="checkbox-option">
+                                <input type="checkbox" name="comparison" value="avgMonth" onchange="updateComparison()">
+                                <span>Average Month</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="invoiceChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Settings Modal -->
-        <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; overflow-y: auto;">
-            <div style="background: white; margin: 50px auto; max-width: 800px; border-radius: 12px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                    <h2 style="color: #333; font-size: 2em; margin: 0;">⚙️ Settings</h2>
-                    <button onclick="closeSettings()" style="background: #f3f4f6; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 1.2em; font-weight: bold; color: #666;">✕</button>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px; font-size: 1.3em;">🔄 Auto-Refresh Settings</h3>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; color: #666; font-weight: 600;">Refresh Interval (seconds)</label>
-                        <input type="number" id="refreshInterval" min="10" max="3600" value="30" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;">
-                        <small style="color: #999; display: block; margin-top: 5px;">How often to automatically refresh data (10-3600 seconds)</small>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                            <input type="checkbox" id="autoRefreshEnabled" checked style="width: 20px; height: 20px; cursor: pointer;">
-                            <span style="color: #666; font-weight: 600;">Enable Auto-Refresh</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px; font-size: 1.3em;">🔗 Webhook URLs</h3>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; color: #666; font-weight: 600;">Invoice Data Webhook</label>
-                        <input type="text" id="invoiceWebhookUrl" readonly style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.9em; background: #f9fafb; color: #666;">
-                        <small style="color: #999; display: block; margin-top: 5px;">Webhook URL for fetching invoice data</small>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; color: #666; font-weight: 600;">AI Query Webhook</label>
-                        <input type="text" id="aiWebhookUrl" readonly style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.9em; background: #f9fafb; color: #666;">
-                        <small style="color: #999; display: block; margin-top: 5px;">Webhook URL for AI queries</small>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px; font-size: 1.3em;">📊 Display Preferences</h3>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; color: #666; font-weight: 600;">Default Period View</label>
-                        <select id="defaultPeriod" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em; cursor: pointer;">
-                            <option value="week">Last Week</option>
-                            <option value="month">Last Month</option>
-                            <option value="year" selected>Last Year</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 15px; margin-top: 30px;">
-                    <button onclick="saveSettings()" style="flex: 1; background: #667eea; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        💾 Save Settings
-                    </button>
-                    <button onclick="closeSettings()" style="flex: 1; background: #f3f4f6; color: #666; border: none; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: 600;">
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="ai-query">
-            <h2>🤖 AI Query Assistant</h2>
-            <div class="chat-container">
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message ai">
-                        <strong>AI Assistant:</strong> Hello! I can help you query and analyze your invoice data. Ask me anything!
-                    </div>
-                </div>
-                <div class="query-input-container">
-                    <input 
-                        type="text" 
-                        id="queryInput" 
-                        class="query-input" 
-                        placeholder="Ask a question about your invoice data..."
-                        onkeypress="if(event.key === 'Enter') { console.log('🔴 Enter key pressed'); sendQuery(); }"
-                    >
-                    <button class="send-btn" id="sendBtn" onclick="console.log('🔴 Send button clicked'); sendQuery();">Send</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="card">
-                <h2><span class="card-icon">💰</span> Total Revenue</h2>
-                <div class="stat-value" id="kpiRevenue">-</div>
-                <div class="stat-label">Yesterday</div>
-                <div class="comparisons" id="kpiRevenueComparisons"></div>
-            </div>
-            <div class="card">
-                <h2><span class="card-icon">📄</span> Number of Invoices</h2>
-                <div class="stat-value" id="kpiInvoices">-</div>
-                <div class="stat-label">Yesterday</div>
-                <div class="comparisons" id="kpiInvoicesComparisons"></div>
-            </div>
-            <div class="card">
-                <h2><span class="card-icon">🔄</span> Number of Transactions</h2>
-                <div class="stat-value" id="kpiTransactions">-</div>
-                <div class="stat-label">Yesterday</div>
-                <div class="comparisons" id="kpiTransactionsComparisons"></div>
-            </div>
-            <div class="card">
-                <h2><span class="card-icon">📊</span> Average Invoice Value</h2>
-                <div class="stat-value" id="kpiAvgInvoice">-</div>
-                <div class="stat-label">Yesterday</div>
-                <div class="comparisons" id="kpiAvgInvoiceComparisons"></div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <h2>📈 Invoices by Date</h2>
-            
-            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333; font-size: 1.1em;">📅 View Period</label>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="radio" name="viewPeriod" value="today" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Today</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="radio" name="viewPeriod" value="week" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>This Week</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="radio" name="viewPeriod" value="month" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>This Month</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="radio" name="viewPeriod" value="year" onchange="updateComparison()" checked style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>This Year</span>
-                        </label>
-                    </div>
-                </div>
-                
-                <div>
-                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333; font-size: 1.1em;">📊 Compare To (Multiple selections allowed)</label>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="comparison" value="sameDayLastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Same Day Last Year</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="comparison" value="sameWeekLastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Same Week Last Year</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="comparison" value="sameMonthLastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Same Month Last Year</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="comparison" value="lastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Last Year</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="comparison" value="avgDay" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Average Day</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="comparison" value="avgWeek" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Average Week</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                            <input type="checkbox" name="comparison" value="avgMonth" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
-                            <span>Average Month</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="date-range" id="dateRange"></div>
-            <div class="chart-wrapper">
-                <canvas id="invoiceChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Additional Analytics Charts -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; margin-top: 30px;">
-            <!-- Day of Week Analysis -->
-            <div class="chart-container">
-                <h2>📅 Day of Week Analysis</h2>
-                <div class="chart-wrapper" style="height: 300px;">
+        <!-- Analytics Grid -->
+        <div class="analytics-grid">
+            <div class="analytics-card">
+                <h3>📅 Day of Week Analysis</h3>
+                <div class="analytics-chart">
                     <canvas id="dayOfWeekChart"></canvas>
                 </div>
             </div>
-
-            <!-- Monthly Trends -->
-            <div class="chart-container">
-                <h2>📆 Monthly Trends</h2>
-                <div class="chart-wrapper" style="height: 300px;">
+            <div class="analytics-card">
+                <h3>📆 Monthly Trends</h3>
+                <div class="analytics-chart">
                     <canvas id="monthlyChart"></canvas>
                 </div>
             </div>
-
-            <!-- Revenue vs Invoices -->
-            <div class="chart-container">
-                <h2>💰 Revenue vs Invoices</h2>
-                <div class="chart-wrapper" style="height: 300px;">
+            <div class="analytics-card">
+                <h3>💰 Revenue vs Invoices</h3>
+                <div class="analytics-chart">
                     <canvas id="revenueVsInvoicesChart"></canvas>
                 </div>
             </div>
-
-            <!-- Growth Rate -->
-            <div class="chart-container">
-                <h2>📈 Growth Rate</h2>
-                <div class="chart-wrapper" style="height: 300px;">
-                    <canvas id="growthChart"></canvas>
+            <div class="analytics-card">
+                <h3>📈 Growth Rate</h3>
+                <div class="analytics-chart">
+                    <canvas id="growthRateChart"></canvas>
                 </div>
             </div>
-
-            <!-- Top Performing Days -->
-            <div class="chart-container">
-                <h2>🏆 Top 10 Days</h2>
-                <div class="chart-wrapper" style="height: 300px;">
+            <div class="analytics-card">
+                <h3>🏆 Top 10 Invoice Days</h3>
+                <div class="analytics-chart">
                     <canvas id="topDaysChart"></canvas>
                 </div>
             </div>
-
-            <!-- Average Revenue per Invoice -->
-            <div class="chart-container">
-                <h2>💵 Average Revenue per Invoice</h2>
-                <div class="chart-wrapper" style="height: 300px;">
-                    <canvas id="avgRevenueChart"></canvas>
-                </div>
-            </div>
-        </div>
-        </div>
-
-        <!-- AI Suggestions Panel -->
-        <div class="ai-suggestions-panel">
-            <div class="suggestions-header">
-                <h2>🤖 AI Suggestions</h2>
-                <button id="refreshSuggestionsBtn" onclick="fetchAISuggestions()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 600;">
-                    🔄 Refresh
-                </button>
-            </div>
-            <div id="suggestionsContent" style="padding: 20px;">
-                <div style="text-align: center; color: #999; padding: 40px 20px;">
-                    <div style="font-size: 3em; margin-bottom: 15px;">💡</div>
-                    <p>Loading suggestions...</p>
+            <div class="analytics-card">
+                <h3>💲 Avg Revenue per Invoice</h3>
+                <div class="analytics-chart">
+                    <canvas id="avgRevenuePerInvoiceChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay" onclick="if(event.target === this) closeSettings()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 class="modal-title">⚙️ Settings</h2>
+                <button class="modal-close" onclick="closeSettings()">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Auto-Refresh Interval (seconds)</label>
+                <input type="number" id="refreshInterval" class="form-input" min="10" max="3600" value="30">
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" id="autoRefreshEnabled" checked style="margin-right: 8px;">
+                    Enable Auto-Refresh
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Invoice Data Webhook</label>
+                <input type="text" id="invoiceWebhookUrl" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">AI Query Webhook</label>
+                <input type="text" id="aiWebhookUrl" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Default Period View</label>
+                <select id="defaultPeriod" class="form-input">
+                    <option value="week">Last Week</option>
+                    <option value="month">Last Month</option>
+                    <option value="year" selected>Last Year</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button class="btn btn-primary" onclick="saveSettings()" style="flex: 1;">💾 Save Settings</button>
+                <button class="btn" onclick="closeSettings()" style="flex: 1; background: var(--bg-secondary); color: var(--text-primary);">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        let refreshIntervalId = null;
+        // Webhook Configuration
+        const INVOICE_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/60e42850-6593-4d18-a4c7-c38293d1d768';
+        const AI_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a772-48c2040cfc83';
+        const CORS_PROXY = 'https://corsproxy.io/?';
         
-        // Detect if running from file://, http://localhost, or GitHub Pages
         const isFileProtocol = window.location.protocol === 'file:';
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         const isGitHubPages = window.location.hostname.includes('github.io');
         
-        // Webhook URLs
-        const INVOICE_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/60e42850-6593-4d18-a4c7-c38293d1d768';
-        const AI_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a772-48c2040cfc83';
-        
-        // CORS proxy for GitHub Pages (since webhook doesn't support CORS)
-        // Using corsproxy.io which supports POST requests
-        const CORS_PROXY = 'https://corsproxy.io/?';
-        
-        // Use proxy endpoints if running on local server, otherwise use direct URLs with CORS proxy for GitHub Pages
         const invoiceDataWebhookUrl = (isFileProtocol || isGitHubPages)
             ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(INVOICE_WEBHOOK) : INVOICE_WEBHOOK)
             : '/proxy/invoice';
         const aiWebhookUrl = (isFileProtocol || isGitHubPages)
             ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(AI_WEBHOOK) : AI_WEBHOOK)
             : '/proxy/ai';
-            
+
+        // Global State
+        let refreshIntervalId = null;
         let invoiceChart = null;
-        let fullInvoiceData = null; // Store all data
-        let currentPeriod = 'year'; // Default period
-        let selectedComparisons = []; // Store selected comparison options
+        let fullInvoiceData = null;
+        let currentPeriod = 'year';
+        let selectedComparisons = [];
+        let dayOfWeekChart = null;
+        let monthlyChart = null;
+        let revenueVsInvoicesChart = null;
+        let growthRateChart = null;
+        let topDaysChart = null;
+        let avgRevenuePerInvoiceChart = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Set up auto-refresh for invoice data
             setupAutoRefresh();
-
-            // Initial fetch on page load
             fetchData();
+            loadSettings();
         });
 
-        function setupAutoRefresh() {
-            // Clear existing interval
-            if (refreshIntervalId) {
-                clearInterval(refreshIntervalId);
-            }
+        // Settings Functions
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+            document.getElementById('invoiceWebhookUrl').value = INVOICE_WEBHOOK;
+            document.getElementById('aiWebhookUrl').value = AI_WEBHOOK;
+        }
 
-            // Get refresh interval from settings (default 30 seconds)
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            const interval = parseInt(document.getElementById('refreshInterval').value) || 30;
+            const enabled = document.getElementById('autoRefreshEnabled').checked;
+            const period = document.getElementById('defaultPeriod').value;
+            
+            localStorage.setItem('refreshInterval', interval);
+            localStorage.setItem('autoRefreshEnabled', enabled);
+            localStorage.setItem('defaultPeriod', period);
+            
+            setupAutoRefresh();
+            currentPeriod = period;
+            closeSettings();
+        }
+
+        function loadSettings() {
+            const interval = localStorage.getItem('refreshInterval') || '30';
+            const enabled = localStorage.getItem('autoRefreshEnabled') !== 'false';
+            const period = localStorage.getItem('defaultPeriod') || 'year';
+            
+            document.getElementById('refreshInterval').value = interval;
+            document.getElementById('autoRefreshEnabled').checked = enabled;
+            document.getElementById('defaultPeriod').value = period;
+            currentPeriod = period;
+        }
+
+        function setupAutoRefresh() {
+            if (refreshIntervalId) clearInterval(refreshIntervalId);
             const intervalSeconds = parseInt(localStorage.getItem('refreshInterval') || '30', 10);
             const autoRefreshEnabled = localStorage.getItem('autoRefreshEnabled') !== 'false';
             
             if (autoRefreshEnabled && intervalSeconds >= 10) {
                 refreshIntervalId = setInterval(fetchData, intervalSeconds * 1000);
-                console.log(`Auto-refresh enabled: ${intervalSeconds} seconds`);
-            } else {
-                console.log('Auto-refresh disabled');
             }
         }
 
-        async function fetchData() {
-            console.log('🔄 fetchData() called');
-            console.log('Webhook URL:', invoiceDataWebhookUrl);
-            console.log('Is GitHub Pages:', isGitHubPages);
-            console.log('Is File Protocol:', isFileProtocol);
+        // Connection Status
+        function updateConnectionStatus(connected, status = 'connected') {
+            const statusEl = document.getElementById('connectionStatus');
+            const textEl = document.getElementById('connectionText');
             
-            updateConnectionStatus(true, 'connecting');
+            if (statusEl) {
+                statusEl.classList.toggle('error', !connected);
+            }
+            if (textEl) {
+                textEl.textContent = connected ? (status === 'connecting' ? 'Connecting...' : 'Connected') : 'Disconnected';
+            }
+        }
 
+        // Fetch Data from Webhook
+        async function fetchData() {
+            updateConnectionStatus(true, 'connecting');
+            
             try {
-                console.log('📡 Fetching data from:', invoiceDataWebhookUrl);
-                const fetchStart = performance.now();
-                
                 const response = await fetch(invoiceDataWebhookUrl, {
                     method: 'GET',
                     headers: {
@@ -714,478 +802,88 @@
                     }
                 });
 
-                const fetchDuration = performance.now() - fetchStart;
-                console.log(`⏱️ Fetch completed in ${fetchDuration.toFixed(2)}ms`);
-                console.log('Response status:', response.status, response.statusText);
-                console.log('Response ok:', response.ok);
-
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ HTTP Error Response:', errorText);
-                    throw new Error(`HTTP error! status: ${response.status}: ${errorText}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('✅ Data received from webhook:', data);
-                console.log('Data type:', typeof data, 'Is Array:', Array.isArray(data));
-                console.log('Data length:', Array.isArray(data) ? data.length : 'N/A');
-                
-                if (Array.isArray(data) && data.length > 0) {
-                    console.log('First record:', data[0]);
-                }
-                
                 displayData(data);
                 updateConnectionStatus(true, 'connected');
-                updateLastUpdate();
             } catch (error) {
-                console.error('❌ Error fetching data:', error);
-                console.error('Error name:', error.name);
-                console.error('Error message:', error.message);
-                console.error('Error stack:', error.stack);
-                
+                console.error('Error fetching data:', error);
                 updateConnectionStatus(false);
-                
-                // Show error in connection status
-                const connectionText = document.getElementById('connectionText');
-                if (connectionText) {
-                    let errorMessage = 'Connection Error';
-                    if (error.message.includes('CORS') || error.message.includes('Failed to fetch') || 
-                        error.message.includes('Access-Control-Allow-Origin')) {
-                        errorMessage = 'CORS Error - Use local server';
-                    }
-                    connectionText.textContent = errorMessage;
-                }
             }
         }
 
+        // Process and Display Data
         function displayData(data) {
-            console.log('displayData called with:', data);
-            
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                console.warn('No data available');
+                return;
+            }
+
             try {
-                // Process invoice data
                 const invoiceData = processInvoiceData(data);
-                console.log('Processed invoice data:', invoiceData);
-                
-                // Store full data for filtering
                 fullInvoiceData = invoiceData;
-                
-                // Update KPI cards with yesterday's data
                 updateKPICards(data);
-                
-                // Display data for current period
                 updateDisplayForPeriod(currentPeriod);
-                
-                // Fetch AI suggestions when new data is loaded
-                fetchAISuggestions();
             } catch (error) {
                 console.error('Error displaying data:', error);
-                updateConnectionStatus(false);
-                const connectionText = document.getElementById('connectionText');
-                if (connectionText) {
-                    connectionText.textContent = 'Error processing data';
-                }
             }
-        }
-
-        function filterByPeriod(period) {
-            currentPeriod = period;
-            
-            // Update active button
-            document.querySelectorAll('.period-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-period="${period}"]`).classList.add('active');
-            
-            // Update display
-            if (fullInvoiceData) {
-                updateDisplayForPeriod(period);
-            }
-        }
-
-        function updateDisplayForPeriodWithComparisons(period, comparisons) {
-            if (!fullInvoiceData) return;
-            
-            // Calculate date range for selected period
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            yesterday.setHours(23, 59, 59, 999);
-            
-            let startDate, endDate, periodLabel;
-            
-            switch(period) {
-                case 'today':
-                    startDate = new Date(today);
-                    endDate = new Date(today);
-                    endDate.setHours(23, 59, 59, 999);
-                    periodLabel = 'Today';
-                    break;
-                case 'week':
-                    // This week (Monday to today)
-                    startDate = new Date(today);
-                    const dayOfWeek = startDate.getDay();
-                    const diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
-                    startDate.setDate(diff);
-                    endDate = new Date(yesterday);
-                    periodLabel = 'This Week';
-                    break;
-                case 'month':
-                    // This month (first day of month to yesterday)
-                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
-                    endDate = new Date(yesterday);
-                    periodLabel = 'This Month';
-                    break;
-                case 'year':
-                    // This year (January 1 to yesterday)
-                    startDate = new Date(today.getFullYear(), 0, 1);
-                    endDate = new Date(yesterday);
-                    periodLabel = 'This Year';
-                    break;
-                default:
-                    startDate = new Date(today);
-                    startDate.setDate(startDate.getDate() - 364);
-                    endDate = new Date(yesterday);
-                    periodLabel = 'Last Year';
-            }
-            
-            // Filter main period data
-            const mainData = fullInvoiceData.dailyData.filter(item => {
-                return item.date >= startDate && item.date <= endDate;
-            });
-            
-            // Calculate comparison datasets
-            const comparisonDatasets = [];
-            const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
-            let colorIndex = 0;
-            
-            comparisons.forEach(comparison => {
-                let compData = [];
-                let compLabel = '';
-                
-                switch(comparison) {
-                    case 'sameDayLastYear':
-                        if (period === 'today') {
-                            const lastYearDate = new Date(today);
-                            lastYearDate.setFullYear(lastYearDate.getFullYear() - 1);
-                            compData = fullInvoiceData.dailyData.filter(item => {
-                                const itemDate = new Date(item.date);
-                                return itemDate.getFullYear() === lastYearDate.getFullYear() &&
-                                       itemDate.getMonth() === lastYearDate.getMonth() &&
-                                       itemDate.getDate() === lastYearDate.getDate();
-                            });
-                            compLabel = 'Same Day Last Year';
-                        }
-                        break;
-                    case 'sameWeekLastYear':
-                        if (period === 'week') {
-                            const lastYearStart = new Date(startDate);
-                            lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
-                            const lastYearEnd = new Date(endDate);
-                            lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
-                            compData = fullInvoiceData.dailyData.filter(item => {
-                                const itemDate = new Date(item.date);
-                                return itemDate >= lastYearStart && itemDate <= lastYearEnd;
-                            });
-                            compLabel = 'Same Week Last Year';
-                        }
-                        break;
-                    case 'sameMonthLastYear':
-                        if (period === 'month') {
-                            const lastYearStart = new Date(startDate);
-                            lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
-                            const lastYearEnd = new Date(endDate);
-                            lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
-                            compData = fullInvoiceData.dailyData.filter(item => {
-                                const itemDate = new Date(item.date);
-                                return itemDate >= lastYearStart && itemDate <= lastYearEnd;
-                            });
-                            compLabel = 'Same Month Last Year';
-                        }
-                        break;
-                    case 'lastYear':
-                        const lastYearStart = new Date(startDate);
-                        lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
-                        const lastYearEnd = new Date(endDate);
-                        lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
-                        compData = fullInvoiceData.dailyData.filter(item => {
-                            const itemDate = new Date(item.date);
-                            return itemDate >= lastYearStart && itemDate <= lastYearEnd;
-                        });
-                        compLabel = 'Last Year';
-                        break;
-                    case 'avgDay':
-                        // Calculate average per day across all data
-                        const allDays = fullInvoiceData.dailyData.filter(item => item.date.getDay() !== 0);
-                        const avgDayInvoices = allDays.length > 0 
-                            ? allDays.reduce((sum, item) => sum + item.count, 0) / allDays.length 
-                            : 0;
-                        const avgDayRevenue = allDays.length > 0 && allDays.some(d => d.revenue)
-                            ? allDays.reduce((sum, item) => sum + (item.revenue || 0), 0) / allDays.length
-                            : 0;
-                        // Create constant line for average
-                        compData = mainData.map(item => ({
-                            date: item.date,
-                            count: avgDayInvoices,
-                            revenue: avgDayRevenue
-                        }));
-                        compLabel = 'Average Day';
-                        break;
-                    case 'avgWeek':
-                        // Calculate average per week
-                        const weeks = [];
-                        for (let d = new Date(fullInvoiceData.dailyData[0].date); d <= new Date(fullInvoiceData.dailyData[fullInvoiceData.dailyData.length - 1].date); d.setDate(d.getDate() + 7)) {
-                            const weekEnd = new Date(d);
-                            weekEnd.setDate(weekEnd.getDate() + 6);
-                            const weekData = fullInvoiceData.dailyData.filter(item => {
-                                return item.date >= d && item.date <= weekEnd;
-                            });
-                            if (weekData.length > 0) {
-                                weeks.push({
-                                    invoices: weekData.reduce((sum, item) => sum + item.count, 0),
-                                    revenue: weekData.reduce((sum, item) => sum + (item.revenue || 0), 0)
-                                });
-                            }
-                        }
-                        const avgWeekInvoices = weeks.length > 0 ? weeks.reduce((sum, w) => sum + w.invoices, 0) / weeks.length : 0;
-                        const avgWeekRevenue = weeks.length > 0 ? weeks.reduce((sum, w) => sum + w.revenue, 0) / weeks.length : 0;
-                        compData = mainData.map(item => ({
-                            date: item.date,
-                            count: avgWeekInvoices / 7, // Daily average for week
-                            revenue: avgWeekRevenue / 7
-                        }));
-                        compLabel = 'Average Week (Daily)';
-                        break;
-                    case 'avgMonth':
-                        // Calculate average per month
-                        const months = [];
-                        const monthMap = new Map();
-                        fullInvoiceData.dailyData.forEach(item => {
-                            const monthKey = `${item.date.getFullYear()}-${item.date.getMonth()}`;
-                            if (!monthMap.has(monthKey)) {
-                                monthMap.set(monthKey, { invoices: 0, revenue: 0, days: 0 });
-                            }
-                            const monthData = monthMap.get(monthKey);
-                            monthData.invoices += item.count;
-                            monthData.revenue += (item.revenue || 0);
-                            if (item.date.getDay() !== 0) monthData.days++;
-                        });
-                        monthMap.forEach((data, key) => {
-                            if (data.days > 0) {
-                                months.push({
-                                    invoices: data.invoices / data.days,
-                                    revenue: data.revenue / data.days
-                                });
-                            }
-                        });
-                        const avgMonthInvoices = months.length > 0 ? months.reduce((sum, m) => sum + m.invoices, 0) / months.length : 0;
-                        const avgMonthRevenue = months.length > 0 ? months.reduce((sum, m) => sum + m.revenue, 0) / months.length : 0;
-                        compData = mainData.map(item => ({
-                            date: item.date,
-                            count: avgMonthInvoices,
-                            revenue: avgMonthRevenue
-                        }));
-                        compLabel = 'Average Month (Daily)';
-                        break;
-                }
-                
-                if (compData.length > 0) {
-                    comparisonDatasets.push({
-                        label: compLabel,
-                        data: compData,
-                        color: colors[colorIndex % colors.length]
-                    });
-                    colorIndex++;
-                }
-            });
-            
-            // Calculate statistics for main period
-            const totalInvoices = mainData.reduce((sum, item) => sum + item.count, 0);
-            const totalRevenue = mainData.reduce((sum, item) => sum + (item.revenue || 0), 0);
-            
-            // Count days excluding Sundays
-            const daysExcludingSundays = mainData.filter(item => item.date.getDay() !== 0).length;
-            const weekdayData = mainData.filter(item => {
-                const dayOfWeek = item.date.getDay();
-                return dayOfWeek >= 1 && dayOfWeek <= 5;
-            });
-            const saturdayData = mainData.filter(item => item.date.getDay() === 6);
-            
-            const weekdayInvoices = weekdayData.reduce((sum, item) => sum + item.count, 0);
-            const saturdayInvoices = saturdayData.reduce((sum, item) => sum + item.count, 0);
-            const weekdayDays = weekdayData.length;
-            const saturdayDays = saturdayData.length;
-            
-            const avgPerDay = daysExcludingSundays > 0 ? totalInvoices / daysExcludingSundays : 0;
-            const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
-            const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
-            
-            // Update statistics cards
-            updateStat('totalInvoices', totalInvoices.toLocaleString());
-            if (totalRevenue > 0) {
-                updateStat('totalRevenue', '$' + totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-            } else {
-                updateStat('totalRevenue', '-');
-            }
-            updateStat('avgPerDay', avgPerDay.toFixed(2));
-            updateStat('avgPerWeekday', avgPerWeekday.toFixed(2));
-            updateStat('avgPerSaturday', avgPerSaturday.toFixed(2));
-            
-            // Update labels
-            const totalInvoicesLabel = document.getElementById('totalInvoicesLabel');
-            const totalRevenueLabel = document.getElementById('totalRevenueLabel');
-            if (totalInvoicesLabel) {
-                totalInvoicesLabel.textContent = `Invoices in ${periodLabel.toLowerCase()}`;
-            }
-            if (totalRevenueLabel) {
-                totalRevenueLabel.textContent = `Revenue in ${periodLabel.toLowerCase()}`;
-            }
-            
-            // Update date range display
-            const dateRangeEl = document.getElementById('dateRange');
-            dateRangeEl.textContent = `${periodLabel}: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
-            
-            // Update chart with main data and comparisons
-            updateChartWithComparisons(mainData, comparisonDatasets);
-            
-            // Update all analytics charts with filtered data
-            updateAnalyticsCharts(mainData);
-        }
-
-        function updateDisplayForPeriod(period) {
-            if (!fullInvoiceData) return;
-            
-            // Use the new comparison function with no comparisons
-            updateDisplayForPeriodWithComparisons(period, []);
         }
 
         function processInvoiceData(data) {
-            // Calculate date range (last 365 days, ending yesterday)
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() - 1); // Yesterday
-            endDate.setHours(23, 59, 59, 999);
+            if (!Array.isArray(data)) return null;
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            const endDate = yesterday;
+
             const startDate = new Date(endDate);
             startDate.setDate(startDate.getDate() - 364);
-            startDate.setHours(0, 0, 0, 0);
 
-            console.log('Processing data, type:', typeof data, 'isArray:', Array.isArray(data));
-            
-            // Check if data is in daily format (txn_day, invoices, revenue)
-            if (Array.isArray(data) && data.length > 0 && data[0].txn_day !== undefined && data[0].invoices !== undefined) {
-                console.log('Processing daily data format with', data.length, 'records');
-                return processDailyDataFormat(data, startDate, endDate);
-            }
-
-            // Check if data is in aggregated format (from webhook)
-            let stats = null;
-            if (Array.isArray(data) && data.length > 0) {
-                console.log('Data is array, first element:', data[0]);
-                if (data[0].total_number_of_invoices !== undefined) {
-                    // Webhook returns aggregated stats in array
-                    stats = data[0];
-                }
-            } else if (data && typeof data === 'object' && data.total_number_of_invoices !== undefined) {
-                // Single object with stats
-                stats = data;
-            }
-
-            if (stats) {
-                // Use aggregated statistics from webhook
-                const totalInvoices = stats.total_number_of_invoices || 0;
-                const avgPerDay = stats.average_invoices_per_date || 0;
-                const avgPerWeekday = stats.average_weekday_invoices || 0;
-                const avgPerSaturday = stats.average_saturday_invoices || 0;
-                
-                const dailyData = [];
-
-                return {
-                    totalInvoices,
-                    totalRevenue: 0,
-                    avgPerDay,
-                    avgPerWeekday,
-                    avgPerSaturday,
-                    dailyData,
-                    startDate,
-                    endDate,
-                    hasDailyData: false,
-                    stats: stats
-                };
-            }
-
-            // Fallback: Try to process individual invoice records
-            return processIndividualRecords(data, startDate, endDate);
-        }
-
-        function processDailyDataFormat(data, startDate, endDate) {
-            // Create a map for all dates in range, initialized with 0
-            const dailyDataMap = new Map();
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const dateKey = formatDateKey(d);
-                dailyDataMap.set(dateKey, {
-                    date: new Date(d),
-                    count: 0,
-                    revenue: 0
-                });
-            }
-
+            const dailyData = [];
             let totalInvoices = 0;
             let totalRevenue = 0;
-            let weekdayInvoices = 0;
-            let weekdayRevenue = 0;
             let weekdayDays = 0;
-            let saturdayInvoices = 0;
-            let saturdayRevenue = 0;
             let saturdayDays = 0;
+            let weekdayInvoices = 0;
+            let saturdayInvoices = 0;
 
-            // Process each daily record
-            data.forEach(record => {
-                const recordDate = new Date(record.txn_day);
-                if (isNaN(recordDate.getTime())) {
-                    return; // Skip invalid dates
-                }
+            data.forEach(item => {
+                if (item.txn_day && item.invoices !== undefined && item.revenue !== undefined) {
+                    const date = new Date(item.txn_day + 'T00:00:00');
+                    if (date <= endDate) {
+                        const dayOfWeek = date.getDay();
+                        const isSunday = dayOfWeek === 0;
+                        const isSaturday = dayOfWeek === 6;
+                        const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
 
-                const dateKey = formatDateKey(recordDate);
-                if (dailyDataMap.has(dateKey)) {
-                    const dayData = dailyDataMap.get(dateKey);
-                    dayData.count = record.invoices || 0;
-                    dayData.revenue = record.revenue || 0;
-                    totalInvoices += dayData.count;
-                    totalRevenue += dayData.revenue;
+                        dailyData.push({
+                            date: date,
+                            count: item.invoices || 0,
+                            revenue: item.revenue || 0
+                        });
 
-                    // Track weekday vs Saturday
-                    const dayOfWeek = recordDate.getDay();
-                    if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
-                        weekdayInvoices += dayData.count;
-                        weekdayRevenue += dayData.revenue;
-                    } else if (dayOfWeek === 6) { // Saturday
-                        saturdayInvoices += dayData.count;
-                        saturdayRevenue += dayData.revenue;
+                        totalInvoices += (item.invoices || 0);
+                        totalRevenue += (item.revenue || 0);
+
+                        if (!isSunday) {
+                            if (isWeekday) {
+                                weekdayDays++;
+                                weekdayInvoices += (item.invoices || 0);
+                            } else if (isSaturday) {
+                                saturdayDays++;
+                                saturdayInvoices += (item.invoices || 0);
+                            }
+                        }
                     }
                 }
             });
 
-            // Count weekday and Saturday days in range (excluding Sundays)
-            let totalDaysExcludingSundays = 0;
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const dayOfWeek = d.getDay();
-                if (dayOfWeek === 0) {
-                    // Skip Sundays
-                    continue;
-                }
-                totalDaysExcludingSundays++;
-                if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-                    weekdayDays++;
-                } else if (dayOfWeek === 6) {
-                    saturdayDays++;
-                }
-            }
-
-            // Convert to sorted array
-            const dailyData = Array.from(dailyDataMap.values())
-                .sort((a, b) => a.date - b.date);
-
-            // Calculate averages (excluding Sundays from avgPerDay)
-            const avgPerDay = totalDaysExcludingSundays > 0 ? totalInvoices / totalDaysExcludingSundays : 0;
+            const totalDays = dailyData.length;
+            const avgPerDay = totalDays > 0 ? totalInvoices / totalDays : 0;
             const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
             const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
 
@@ -1195,1754 +893,35 @@
                 avgPerDay,
                 avgPerWeekday,
                 avgPerSaturday,
-                dailyData,
-                startDate,
-                endDate,
-                hasDailyData: true
+                dailyData: dailyData.sort((a, b) => a.date - b.date)
             };
         }
 
-        function processIndividualRecords(data, startDate, endDate) {
-            let records = [];
-            
-            if (Array.isArray(data)) {
-                records = data;
-            } else if (data.invoices) {
-                records = Array.isArray(data.invoices) ? data.invoices : [data.invoices];
-            } else if (data.records) {
-                records = data.records;
-            } else if (data.data) {
-                records = Array.isArray(data.data) ? data.data : [data.data];
-            }
-
-            // Group invoices by date
-            const dailyCounts = new Map();
-            let totalInvoices = 0;
-            let weekdayInvoices = 0;
-            let weekdayDays = 0;
-            let saturdayInvoices = 0;
-            let saturdayDays = 0;
-
-            // Initialize all dates in range with 0
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const dateKey = formatDateKey(d);
-                dailyCounts.set(dateKey, 0);
-            }
-
-            // Process records
-            records.forEach(record => {
-                let recordDate = null;
-                
-                // Try to extract date from various possible fields
-                if (record.date) {
-                    recordDate = new Date(record.date);
-                } else if (record.createdDate) {
-                    recordDate = new Date(record.createdDate);
-                } else if (record.created_at) {
-                    recordDate = new Date(record.created_at);
-                } else if (record.invoiceDate) {
-                    recordDate = new Date(record.invoiceDate);
-                } else if (record.txn_day) {
-                    recordDate = new Date(record.txn_day);
-                } else if (typeof record === 'string' && record.match(/^\d{4}-\d{2}-\d{2}/)) {
-                    recordDate = new Date(record);
-                }
-
-                if (recordDate && !isNaN(recordDate.getTime())) {
-                    // Check if date is within last 365 days
-                    if (recordDate >= startDate && recordDate <= endDate) {
-                        const dateKey = formatDateKey(recordDate);
-                        const currentCount = dailyCounts.get(dateKey) || 0;
-                        dailyCounts.set(dateKey, currentCount + 1);
-                        totalInvoices++;
-
-                        // Track weekday vs Saturday
-                        const dayOfWeek = recordDate.getDay();
-                        if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
-                            weekdayInvoices++;
-                        } else if (dayOfWeek === 6) { // Saturday
-                            saturdayInvoices++;
-                        }
-                    }
-                }
-            });
-
-            // Count weekday and Saturday days in range (excluding Sundays)
-            let totalDaysExcludingSundays = 0;
-            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                const dayOfWeek = d.getDay();
-                if (dayOfWeek === 0) {
-                    // Skip Sundays
-                    continue;
-                }
-                totalDaysExcludingSundays++;
-                if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-                    weekdayDays++;
-                } else if (dayOfWeek === 6) {
-                    saturdayDays++;
-                }
-            }
-
-            // Convert daily counts to sorted array
-            const dailyData = Array.from(dailyCounts.entries())
-                .map(([date, count]) => ({
-                    date: new Date(date),
-                    count: count,
-                    revenue: 0
-                }))
-                .sort((a, b) => a.date - b.date);
-
-            // Calculate averages (excluding Sundays from avgPerDay)
-            const avgPerDay = totalDaysExcludingSundays > 0 ? totalInvoices / totalDaysExcludingSundays : 0;
-            const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
-            const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
-
-            return {
-                totalInvoices,
-                totalRevenue: 0,
-                avgPerDay,
-                avgPerWeekday,
-                avgPerSaturday,
-                dailyData,
-                startDate,
-                endDate,
-                hasDailyData: true
-            };
-        }
-
-        function formatDateKey(date) {
-            return date.toISOString().split('T')[0];
-        }
-
-        function updateChartWithComparisons(mainData, comparisonDatasets) {
-            const ctx = document.getElementById('invoiceChart').getContext('2d');
-            const labels = mainData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            const counts = mainData.map(d => d.count);
-            const hasRevenue = mainData.some(d => d.revenue !== undefined && d.revenue > 0);
-            const revenues = hasRevenue ? mainData.map(d => d.revenue || 0) : null;
-
-            if (invoiceChart) {
-                invoiceChart.destroy();
-            }
-
-            const datasets = [{
-                label: 'Current Period',
-                data: counts,
-                borderColor: '#667eea',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 5,
-                yAxisID: 'y'
-            }];
-
-            // Add revenue dataset if available
-            if (hasRevenue && revenues) {
-                datasets.push({
-                    label: 'Revenue',
-                    data: revenues,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                    yAxisID: 'y1'
-                });
-            }
-
-            // Add comparison datasets
-            const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
-            comparisonDatasets.forEach((comp, index) => {
-                const compCounts = comp.data.map(d => d.count);
-                const compColor = comp.color || colors[index % colors.length];
-                datasets.push({
-                    label: comp.label,
-                    data: compCounts,
-                    borderColor: compColor,
-                    backgroundColor: compColor + '20',
-                    borderWidth: 2,
-                    borderDash: [5, 5],
-                    fill: false,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                    yAxisID: 'y'
-                });
-                
-                // Add revenue comparison if available
-                if (hasRevenue && comp.data.some(d => d.revenue !== undefined && d.revenue > 0)) {
-                    const compRevenues = comp.data.map(d => d.revenue || 0);
-                    datasets.push({
-                        label: comp.label + ' (Revenue)',
-                        data: compRevenues,
-                        borderColor: compColor,
-                        backgroundColor: compColor + '20',
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        fill: false,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 5,
-                        yAxisID: 'y1'
-                    });
-                }
-            });
-
-            // Add revenue dataset if available
-            if (hasRevenue && revenues) {
-                datasets.push({
-                    label: 'Revenue',
-                    data: revenues,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 5,
-                    yAxisID: 'y1'
-                });
-            }
-
-            invoiceChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                title: function(context) {
-                                    return dailyData[context[0].dataIndex].date.toLocaleDateString('en-US', { 
-                                        weekday: 'long', 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric' 
-                                    });
-                                },
-                                label: function(context) {
-                                    if (context.dataset.label === 'Revenue') {
-                                        return `Revenue: $${context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                                    }
-                                    return `Invoices: ${context.parsed.y}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            },
-                            title: {
-                                display: true,
-                                text: 'Number of Invoices'
-                            }
-                        },
-                        y1: hasRevenue ? {
-                            type: 'linear',
-                            position: 'right',
-                            beginAtZero: true,
-                            grid: {
-                                drawOnChartArea: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Revenue ($)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                                }
-                            }
-                        } : undefined,
-                        x: {
-                            ticks: {
-                                maxRotation: 45,
-                                minRotation: 45,
-                                maxTicksLimit: 30
-                            },
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateChart(dailyData) {
-            // Legacy function - use comparison function with no comparisons
-            updateChartWithComparisons(dailyData, []);
-            // Also update analytics charts
-            if (fullInvoiceData) {
-                updateAnalyticsCharts(dailyData);
-            }
-        }
-
-        function updateAnalyticsCharts(data) {
-            if (!data || data.length === 0) return;
-
-            // Day of Week Analysis
-            updateDayOfWeekChart(data);
-            
-            // Monthly Trends
-            updateMonthlyChart(data);
-            
-            // Revenue vs Invoices
-            updateRevenueVsInvoicesChart(data);
-            
-            // Growth Rate
-            updateGrowthChart(data);
-            
-            // Top Days
-            updateTopDaysChart(data);
-            
-            // Average Revenue per Invoice
-            updateAvgRevenueChart(data);
-        }
-
-        function updateDayOfWeekChart(data) {
-            const ctx = document.getElementById('dayOfWeekChart');
-            if (!ctx) return;
-
-            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayStats = [0, 0, 0, 0, 0, 0, 0];
-            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
-
-            data.forEach(item => {
-                const dayOfWeek = item.date.getDay();
-                dayStats[dayOfWeek] += item.count;
-                dayCounts[dayOfWeek]++;
-            });
-
-            const averages = dayStats.map((total, idx) => dayCounts[idx] > 0 ? total / dayCounts[idx] : 0);
-
-            if (dayOfWeekChart) {
-                dayOfWeekChart.destroy();
-            }
-
-            dayOfWeekChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: dayNames,
-                    datasets: [{
-                        label: 'Average Invoices',
-                        data: averages,
-                        backgroundColor: [
-                            'rgba(239, 68, 68, 0.6)',
-                            'rgba(59, 130, 246, 0.6)',
-                            'rgba(59, 130, 246, 0.6)',
-                            'rgba(59, 130, 246, 0.6)',
-                            'rgba(59, 130, 246, 0.6)',
-                            'rgba(59, 130, 246, 0.6)',
-                            'rgba(16, 185, 129, 0.6)'
-                        ],
-                        borderColor: [
-                            'rgba(239, 68, 68, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(59, 130, 246, 1)',
-                            'rgba(16, 185, 129, 1)'
-                        ],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateMonthlyChart(data) {
-            const ctx = document.getElementById('monthlyChart');
-            if (!ctx) return;
-
-            const monthlyData = new Map();
-            data.forEach(item => {
-                const monthKey = `${item.date.getFullYear()}-${String(item.date.getMonth() + 1).padStart(2, '0')}`;
-                const monthLabel = item.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-                if (!monthlyData.has(monthKey)) {
-                    monthlyData.set(monthKey, { label: monthLabel, invoices: 0, revenue: 0 });
-                }
-                const month = monthlyData.get(monthKey);
-                month.invoices += item.count;
-                month.revenue += (item.revenue || 0);
-            });
-
-            const sortedMonths = Array.from(monthlyData.entries()).sort();
-            const labels = sortedMonths.map(([key, data]) => data.label);
-            const invoices = sortedMonths.map(([key, data]) => data.invoices);
-
-            if (monthlyChart) {
-                monthlyChart.destroy();
-            }
-
-            monthlyChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Invoices',
-                        data: invoices,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateRevenueVsInvoicesChart(data) {
-            const ctx = document.getElementById('revenueVsInvoicesChart');
-            if (!ctx) return;
-
-            const hasRevenue = data.some(d => d.revenue !== undefined && d.revenue > 0);
-            if (!hasRevenue) {
-                if (revenueVsInvoicesChart) {
-                    revenueVsInvoicesChart.destroy();
-                }
-                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">No revenue data available</div>';
-                return;
-            }
-
-            const labels = data.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            const invoices = data.map(d => d.count);
-            const revenues = data.map(d => d.revenue || 0);
-
-            if (revenueVsInvoicesChart) {
-                revenueVsInvoicesChart.destroy();
-            }
-
-            revenueVsInvoicesChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Invoices',
-                        data: invoices,
-                        backgroundColor: 'rgba(102, 126, 234, 0.6)',
-                        borderColor: 'rgba(102, 126, 234, 1)',
-                        borderWidth: 1,
-                        yAxisID: 'y'
-                    }, {
-                        label: 'Revenue',
-                        data: revenues,
-                        type: 'line',
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Invoices'
-                            }
-                        },
-                        y1: {
-                            type: 'linear',
-                            position: 'right',
-                            beginAtZero: true,
-                            grid: {
-                                drawOnChartArea: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Revenue ($)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 0 });
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateGrowthChart(data) {
-            const ctx = document.getElementById('growthChart');
-            if (!ctx) return;
-
-            if (data.length < 2) {
-                if (growthChart) {
-                    growthChart.destroy();
-                }
-                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">Insufficient data for growth calculation</div>';
-                return;
-            }
-
-            const sortedData = [...data].sort((a, b) => a.date - b.date);
-            const growthRates = [];
-            const labels = [];
-
-            for (let i = 1; i < sortedData.length; i++) {
-                const prev = sortedData[i - 1].count;
-                const curr = sortedData[i].count;
-                const growth = prev > 0 ? ((curr - prev) / prev) * 100 : 0;
-                growthRates.push(growth);
-                labels.push(sortedData[i].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            }
-
-            if (growthChart) {
-                growthChart.destroy();
-            }
-
-            growthChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Growth Rate (%)',
-                        data: growthRates,
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3
-                    }, {
-                        label: 'Zero Line',
-                        data: new Array(growthRates.length).fill(0),
-                        borderColor: '#e5e7eb',
-                        borderWidth: 1,
-                        borderDash: [5, 5],
-                        pointRadius: 0,
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Growth Rate (%)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toFixed(1) + '%';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateTopDaysChart(data) {
-            const ctx = document.getElementById('topDaysChart');
-            if (!ctx) return;
-
-            const sortedData = [...data]
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 10)
-                .reverse();
-
-            const labels = sortedData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            const counts = sortedData.map(d => d.count);
-
-            if (topDaysChart) {
-                topDaysChart.destroy();
-            }
-
-            topDaysChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Invoices',
-                        data: counts,
-                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateAvgRevenueChart(data) {
-            const ctx = document.getElementById('avgRevenueChart');
-            if (!ctx) return;
-
-            const hasRevenue = data.some(d => d.revenue !== undefined && d.revenue > 0);
-            if (!hasRevenue) {
-                if (avgRevenueChart) {
-                    avgRevenueChart.destroy();
-                }
-                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">No revenue data available</div>';
-                return;
-            }
-
-            const avgRevenuePerInvoice = data
-                .filter(d => d.count > 0 && d.revenue > 0)
-                .map(d => ({
-                    date: d.date,
-                    avg: d.revenue / d.count
-                }));
-
-            if (avgRevenuePerInvoice.length === 0) {
-                if (avgRevenueChart) {
-                    avgRevenueChart.destroy();
-                }
-                ctx.parentElement.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">No data available</div>';
-                return;
-            }
-
-            const labels = avgRevenuePerInvoice.map(d => d.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-            const averages = avgRevenuePerInvoice.map(d => d.avg);
-
-            if (avgRevenueChart) {
-                avgRevenueChart.destroy();
-            }
-
-            avgRevenueChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Avg Revenue per Invoice',
-                        data: averages,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Revenue per Invoice ($)'
-                            },
-                            ticks: {
-                                callback: function(value) {
-                                    return '$' + value.toFixed(2);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function showChartMessage(message) {
-            // Destroy existing chart if it exists
-            if (invoiceChart) {
-                invoiceChart.destroy();
-                invoiceChart = null;
-            }
-            
-            const chartWrapper = document.querySelector('.chart-wrapper');
-            chartWrapper.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; border-radius: 8px; padding: 40px;">
-                    <div style="text-align: center; color: #666;">
-                        <div style="font-size: 3em; margin-bottom: 20px;">📊</div>
-                        <p style="font-size: 1.1em;">${message}</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        function displayInvoiceTable(dailyData) {
-            const dataContent = document.getElementById('dataContent');
-            
-            if (dailyData.length === 0) {
-                dataContent.innerHTML = '<div class="error-message">No invoice data found for the last 365 days.</div>';
-                return;
-            }
-
-            // Check if revenue data is available
-            const hasRevenue = dailyData.some(item => item.revenue !== undefined && item.revenue > 0);
-            
-            let tableHTML = '<table><thead><tr><th>Date</th><th>Day of Week</th><th>Number of Invoices</th>';
-            if (hasRevenue) {
-                tableHTML += '<th>Revenue</th>';
-            }
-            tableHTML += '</tr></thead><tbody>';
-            
-            dailyData.forEach(item => {
-                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                const dayName = dayNames[item.date.getDay()];
-                const dateStr = item.date.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                });
-                
-                tableHTML += `<tr>
-                    <td>${dateStr}</td>
-                    <td>${dayName}</td>
-                    <td><strong>${item.count}</strong></td>`;
-                
-                if (hasRevenue) {
-                    const revenue = item.revenue || 0;
-                    tableHTML += `<td>$${revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>`;
-                }
-                
-                tableHTML += `</tr>`;
-            });
-
-            tableHTML += '</tbody></table>';
-            dataContent.innerHTML = tableHTML;
-        }
-
-        function displayWeeklyAnalytics(dailyData) {
-            const weeklyContent = document.getElementById('weeklyContent');
-            
-            if (!dailyData || dailyData.length === 0) {
-                weeklyContent.innerHTML = '<div class="error-message">No data available for weekly analytics.</div>';
-                return;
-            }
-
-            // Group data by week
-            const weeklyMap = new Map();
-            
-            dailyData.forEach(item => {
-                if (!item.date) return;
-                
-                const date = new Date(item.date);
-                // Get the start of the week (Monday)
-                const weekStart = new Date(date);
-                const dayOfWeek = date.getDay();
-                const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
-                weekStart.setDate(diff);
-                weekStart.setHours(0, 0, 0, 0);
-                
-                const weekKey = weekStart.toISOString().split('T')[0];
-                
-                if (!weeklyMap.has(weekKey)) {
-                    weeklyMap.set(weekKey, {
-                        weekStart: new Date(weekStart),
-                        invoices: 0,
-                        revenue: 0,
-                        days: 0
-                    });
-                }
-                
-                const weekData = weeklyMap.get(weekKey);
-                weekData.invoices += item.count || 0;
-                weekData.revenue += item.revenue || 0;
-                weekData.days++;
-            });
-
-            // Convert to array and sort by week start date
-            const weeklyArray = Array.from(weeklyMap.values())
-                .sort((a, b) => b.weekStart - a.weekStart); // Most recent first
-
-            if (weeklyArray.length === 0) {
-                weeklyContent.innerHTML = '<div class="error-message">No weekly data available.</div>';
-                return;
-            }
-
-            const hasRevenue = weeklyArray.some(w => w.revenue > 0);
-            
-            let tableHTML = '<table><thead><tr><th>Week Starting</th><th>Week Ending</th><th>Days</th><th>Total Invoices</th>';
-            if (hasRevenue) {
-                tableHTML += '<th>Total Revenue</th><th>Avg Revenue/Day</th>';
-            }
-            tableHTML += '<th>Avg Invoices/Day</th></tr></thead><tbody>';
-
-            weeklyArray.forEach(week => {
-                const weekEnd = new Date(week.weekStart);
-                weekEnd.setDate(weekEnd.getDate() + 6);
-                
-                const weekStartStr = week.weekStart.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-                const weekEndStr = weekEnd.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-                
-                const avgInvoices = week.days > 0 ? (week.invoices / week.days).toFixed(2) : '0.00';
-                const avgRevenue = week.days > 0 ? (week.revenue / week.days).toFixed(2) : '0.00';
-                
-                tableHTML += `<tr>
-                    <td><strong>${weekStartStr}</strong></td>
-                    <td>${weekEndStr}</td>
-                    <td>${week.days}</td>
-                    <td><strong>${week.invoices.toLocaleString()}</strong></td>`;
-                
-                if (hasRevenue) {
-                    tableHTML += `<td>$${week.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        <td>$${avgRevenue}</td>`;
-                }
-                
-                tableHTML += `<td>${avgInvoices}</td></tr>`;
-            });
-
-            tableHTML += '</tbody></table>';
-            weeklyContent.innerHTML = tableHTML;
-        }
-
-        function displayMonthlyAnalytics(dailyData) {
-            const monthlyContent = document.getElementById('monthlyContent');
-            
-            if (!dailyData || dailyData.length === 0) {
-                monthlyContent.innerHTML = '<div class="error-message">No data available for monthly analytics.</div>';
-                return;
-            }
-
-            // Group data by month
-            const monthlyMap = new Map();
-            
-            dailyData.forEach(item => {
-                if (!item.date) return;
-                
-                const date = new Date(item.date);
-                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                const monthLabel = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                
-                if (!monthlyMap.has(monthKey)) {
-                    monthlyMap.set(monthKey, {
-                        monthLabel: monthLabel,
-                        month: date.getMonth(),
-                        year: date.getFullYear(),
-                        invoices: 0,
-                        revenue: 0,
-                        days: 0
-                    });
-                }
-                
-                const monthData = monthlyMap.get(monthKey);
-                monthData.invoices += item.count || 0;
-                monthData.revenue += item.revenue || 0;
-                monthData.days++;
-            });
-
-            // Convert to array and sort by date (most recent first)
-            const monthlyArray = Array.from(monthlyMap.values())
-                .sort((a, b) => {
-                    if (b.year !== a.year) return b.year - a.year;
-                    return b.month - a.month;
-                });
-
-            if (monthlyArray.length === 0) {
-                monthlyContent.innerHTML = '<div class="error-message">No monthly data available.</div>';
-                return;
-            }
-
-            const hasRevenue = monthlyArray.some(m => m.revenue > 0);
-            
-            let tableHTML = '<table><thead><tr><th>Month</th><th>Days</th><th>Total Invoices</th>';
-            if (hasRevenue) {
-                tableHTML += '<th>Total Revenue</th><th>Avg Revenue/Day</th>';
-            }
-            tableHTML += '<th>Avg Invoices/Day</th></tr></thead><tbody>';
-
-            monthlyArray.forEach(month => {
-                const avgInvoices = month.days > 0 ? (month.invoices / month.days).toFixed(2) : '0.00';
-                const avgRevenue = month.days > 0 ? (month.revenue / month.days).toFixed(2) : '0.00';
-                
-                tableHTML += `<tr>
-                    <td><strong>${month.monthLabel}</strong></td>
-                    <td>${month.days}</td>
-                    <td><strong>${month.invoices.toLocaleString()}</strong></td>`;
-                
-                if (hasRevenue) {
-                    tableHTML += `<td>$${month.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                        <td>$${avgRevenue}</td>`;
-                }
-                
-                tableHTML += `<td>${avgInvoices}</td></tr>`;
-            });
-
-            tableHTML += '</tbody></table>';
-            monthlyContent.innerHTML = tableHTML;
-        }
-
-        function displaySummaryTable(invoiceData) {
-            const dataContent = document.getElementById('dataContent');
-            const stats = invoiceData.stats || {};
-            
-            let tableHTML = `
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h3 style="margin-bottom: 15px; color: #333;">Summary Statistics</h3>
-                    <p style="color: #666; margin-bottom: 15px;">The webhook provides aggregated statistics. Individual daily breakdown is not available.</p>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Metric</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Total Number of Invoices</strong></td>
-                            <td><strong>${stats.total_number_of_invoices?.toLocaleString() || invoiceData.totalInvoices.toLocaleString()}</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Total Dates with Invoices</td>
-                            <td>${stats.total_dates || '-'}</td>
-                        </tr>
-                        <tr>
-                            <td>Average Invoices Per Date</td>
-                            <td>${stats.average_invoices_per_date?.toFixed(2) || invoiceData.avgPerDay.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td>Weekday Total Invoices</td>
-                            <td>${stats.weekday_total_invoices?.toLocaleString() || '-'}</td>
-                        </tr>
-                        <tr>
-                            <td>Weekday Dates</td>
-                            <td>${stats.weekday_dates || '-'}</td>
-                        </tr>
-                        <tr>
-                            <td>Average Weekday Invoices</td>
-                            <td>${stats.average_weekday_invoices?.toFixed(2) || invoiceData.avgPerWeekday.toFixed(2)}</td>
-                        </tr>
-                        <tr>
-                            <td>Saturday Total Invoices</td>
-                            <td>${stats.saturday_total_invoices?.toLocaleString() || '-'}</td>
-                        </tr>
-                        <tr>
-                            <td>Saturday Dates</td>
-                            <td>${stats.saturday_dates || '-'}</td>
-                        </tr>
-                        <tr>
-                            <td>Average Saturday Invoices</td>
-                            <td>${stats.average_saturday_invoices?.toFixed(2) || invoiceData.avgPerSaturday.toFixed(2)}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            `;
-            
-            dataContent.innerHTML = tableHTML;
-        }
-
-        function updateStat(id, value) {
-            const element = document.getElementById(id);
-            if (element) {
-                element.textContent = value;
-            }
-        }
-
-        function updateConnectionStatus(connected, state = 'connected') {
-            const indicator = document.getElementById('connectionStatus');
-            const text = document.getElementById('connectionText');
-            
-            if (connected && state === 'connected') {
-                indicator.className = 'status-indicator';
-                text.textContent = 'Connected';
-            } else if (connected && state === 'connecting') {
-                indicator.className = 'status-indicator';
-                text.textContent = 'Connecting...';
-            } else {
-                indicator.className = 'status-indicator error';
-                text.textContent = 'Disconnected';
-            }
-        }
-
-        function updateLastUpdate() {
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
-        }
-
-        async function sendQuery() {
-            const startTime = performance.now();
-            console.group('🚀 sendQuery() - START');
-            console.log('Timestamp:', new Date().toISOString());
-            console.log('Performance mark:', startTime);
-            
-            const queryInput = document.getElementById('queryInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const chatMessages = document.getElementById('chatMessages');
-            
-            console.log('📋 DOM Elements:', {
-                queryInput: !!queryInput,
-                sendBtn: !!sendBtn,
-                chatMessages: !!chatMessages
-            });
-            
-            const query = queryInput.value.trim();
-            console.log('📝 Query Details:', {
-                rawValue: queryInput.value,
-                trimmedValue: query,
-                length: query.length,
-                isEmpty: !query
-            });
-
-            console.log('🌐 Environment:', {
-                isFileProtocol: isFileProtocol,
-                protocol: window.location.protocol,
-                hostname: window.location.hostname,
-                port: window.location.port,
-                href: window.location.href
-            });
-
-            console.log('💾 Data State:', {
-                fullInvoiceDataAvailable: !!fullInvoiceData,
-                fullInvoiceDataType: typeof fullInvoiceData,
-                currentPeriod: currentPeriod,
-                aiWebhookUrl: aiWebhookUrl,
-                invoiceDataWebhookUrl: invoiceDataWebhookUrl
-            });
-
-            if (fullInvoiceData) {
-                console.log('📊 Invoice Data Details:', {
-                    totalInvoices: fullInvoiceData.totalInvoices,
-                    totalRevenue: fullInvoiceData.totalRevenue,
-                    avgPerDay: fullInvoiceData.avgPerDay,
-                    avgPerWeekday: fullInvoiceData.avgPerWeekday,
-                    avgPerSaturday: fullInvoiceData.avgPerSaturday,
-                    dailyDataLength: fullInvoiceData.dailyData?.length || 0,
-                    hasDailyData: fullInvoiceData.hasDailyData,
-                    startDate: fullInvoiceData.startDate,
-                    endDate: fullInvoiceData.endDate
-                });
-            }
-
-            if (!query) {
-                console.warn('❌ No query provided, returning early');
-                console.groupEnd();
-                return;
-            }
-
-            // Disable input while processing
-            queryInput.disabled = true;
-            sendBtn.disabled = true;
-            console.log('🔒 Input disabled');
-
-            // Add user message
-            const userMessage = document.createElement('div');
-            userMessage.className = 'message user';
-            userMessage.textContent = query;
-            chatMessages.appendChild(userMessage);
-
-            // Clear input
-            queryInput.value = '';
-
-            // Add loading message
-            const loadingMessage = document.createElement('div');
-            loadingMessage.className = 'message ai loading';
-            loadingMessage.id = 'loadingMessage';
-            loadingMessage.textContent = 'AI is thinking...';
-            chatMessages.appendChild(loadingMessage);
-
-            // Scroll to bottom
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            // Check if we're opening as file - show clear message
-            console.log('🔍 Checking file protocol...');
-            console.log('File protocol check result:', {
-                isFileProtocol: isFileProtocol,
-                windowLocationProtocol: window.location.protocol,
-                willBlock: isFileProtocol
-            });
-            
-            if (isFileProtocol) {
-                console.warn('⚠️ File protocol detected - blocking request');
-                console.log('Blocking reason: Browser security restriction prevents external requests from file:// protocol');
-                loadingMessage.remove();
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'message ai';
-                errorMessage.innerHTML = `
-                    <strong>AI Assistant:</strong> Cannot connect when opening file directly.
-                    <br><br>
-                    <strong>⚠️ Browser Security Restriction:</strong> Opening HTML files directly (file://) blocks all external web requests for security reasons.
-                    <br><br>
-                    <strong>✅ Solution - Use Local Server:</strong>
-                    <ol style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
-                        <li>Open <strong>Terminal</strong> (or Command Prompt)</li>
-                        <li>Run: <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">cd "Tudor Glen - Dev server"</code></li>
-                        <li>Run: <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">python3 server.py</code></li>
-                        <li>Your browser will open automatically to <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">http://localhost:8000</code></li>
-                    </ol>
-                    <p style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-left: 4px solid #2196F3; border-radius: 4px;">
-                        <strong>💡 Tip:</strong> The server will stay running until you press Ctrl+C. Keep the terminal window open while using the dashboard.
-                    </p>
-                `;
-                chatMessages.appendChild(errorMessage);
-                queryInput.disabled = false;
-                sendBtn.disabled = false;
-                queryInput.focus();
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                console.groupEnd();
-                return;
-            }
-            
-            console.log('✅ File protocol check passed, proceeding with request');
-            
-            // Declare url outside try block for error handling
-            let url = aiWebhookUrl;
-            
-            try {
-                console.group('📦 Preparing Request Data');
-                const dataPrepStart = performance.now();
-                
-                // Prepare data for POST request (not GET - URL too long with all daily data)
-                // Include all invoice data in the request
-                const invoiceDataPayload = fullInvoiceData ? {
-                    totalInvoices: fullInvoiceData.totalInvoices,
-                    totalRevenue: fullInvoiceData.totalRevenue,
-                    avgPerDay: fullInvoiceData.avgPerDay,
-                    avgPerWeekday: fullInvoiceData.avgPerWeekday,
-                    avgPerSaturday: fullInvoiceData.avgPerSaturday,
-                    dailyData: fullInvoiceData.dailyData,
-                    currentPeriod: currentPeriod
-                } : null;
-                
-                console.log('Invoice Data Payload:', {
-                    exists: !!invoiceDataPayload,
-                    keys: invoiceDataPayload ? Object.keys(invoiceDataPayload) : [],
-                    dailyDataCount: invoiceDataPayload?.dailyData?.length || 0,
-                    dailyDataSize: invoiceDataPayload?.dailyData ? 
-                        JSON.stringify(invoiceDataPayload.dailyData).length + ' bytes' : 'N/A'
-                });
-                
-                const requestData = {
-                    query: query,
-                    timestamp: new Date().toISOString(),
-                    invoiceData: invoiceDataPayload
-                };
-                
-                const requestDataString = JSON.stringify(requestData);
-                const requestDataSize = new Blob([requestDataString]).size;
-                
-                console.log('Request Data Object:', {
-                    query: requestData.query,
-                    timestamp: requestData.timestamp,
-                    hasInvoiceData: !!requestData.invoiceData,
-                    invoiceDataKeys: requestData.invoiceData ? Object.keys(requestData.invoiceData) : [],
-                    jsonString: requestDataString.substring(0, 200) + (requestDataString.length > 200 ? '...' : ''),
-                    jsonSize: requestDataSize + ' bytes',
-                    jsonLength: requestDataString.length + ' characters'
-                });
-                
-                console.log('⏱️ Data preparation time:', (performance.now() - dataPrepStart).toFixed(2) + 'ms');
-                console.groupEnd();
-                
-                console.group('🔗 Preparing POST Request');
-                const urlBuildStart = performance.now();
-                
-                // Use POST instead of GET to avoid URL length limits
-                url = aiWebhookUrl;
-                
-                console.log('Request Details:', {
-                    method: 'POST',
-                    url: url,
-                    bodySize: requestDataSize + ' bytes',
-                    bodyLength: requestDataString.length + ' characters'
-                });
-                
-                console.log('⏱️ Request preparation time:', (performance.now() - urlBuildStart).toFixed(2) + 'ms');
-                console.groupEnd();
-                
-                console.group('🌐 Sending Fetch Request');
-                const fetchStart = performance.now();
-                console.log('Fetch Configuration:', {
-                    method: 'POST',
-                    url: url,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    bodySize: requestDataString.length + ' characters'
-                });
-                
-                console.log('⏳ Initiating fetch request...');
-                const fetchPromise = fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: requestDataString
-                });
-                
-                console.log('Fetch promise created, awaiting response...');
-                const response = await fetchPromise;
-                
-                const fetchDuration = performance.now() - fetchStart;
-                const totalDuration = performance.now() - startTime;
-                
-                console.log('⏱️ Fetch timing:', {
-                    fetchDuration: fetchDuration.toFixed(2) + 'ms',
-                    totalDuration: totalDuration.toFixed(2) + 'ms'
-                });
-                
-                console.groupEnd();
-                
-                console.group('📥 Processing Response');
-                console.log('Response Details:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    ok: response.ok,
-                    type: response.type,
-                    url: response.url,
-                    redirected: response.redirected
-                });
-                
-                const responseHeaders = Object.fromEntries(response.headers.entries());
-                console.log('Response Headers:', responseHeaders);
-                console.log('Response Header Count:', Object.keys(responseHeaders).length);
-
-                if (!response.ok) {
-                    console.error('❌ ERROR RESPONSE');
-                    console.error('Response Status:', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        ok: response.ok
-                    });
-                    
-                    const errorText = await response.text();
-                    console.error('Error Response Body:', {
-                        text: errorText,
-                        length: errorText.length,
-                        isJSON: (() => {
-                            try {
-                                JSON.parse(errorText);
-                                return true;
-                            } catch {
-                                return false;
-                            }
-                        })()
-                    });
-                    
-                    console.groupEnd();
-                    console.groupEnd();
-                    throw new Error(`HTTP error! status: ${response.status}: ${errorText}`);
-                }
-
-                console.log('✅ Response OK, parsing JSON...');
-                const parseStart = performance.now();
-                
-                let data;
-                try {
-                    const responseText = await response.text();
-                    console.log('Raw Response Text:', {
-                        text: responseText.substring(0, 500) + (responseText.length > 500 ? '...' : ''),
-                        length: responseText.length + ' characters',
-                        size: new Blob([responseText]).size + ' bytes'
-                    });
-                    
-                    data = JSON.parse(responseText);
-                    console.log('⏱️ JSON parse time:', (performance.now() - parseStart).toFixed(2) + 'ms');
-                } catch (parseError) {
-                    console.error('❌ JSON Parse Error:', {
-                        error: parseError.message,
-                        stack: parseError.stack
-                    });
-                    throw parseError;
-                }
-                
-                console.log('📥 Parsed Response Data:', {
-                    type: typeof data,
-                    isArray: Array.isArray(data),
-                    keys: typeof data === 'object' && data !== null ? Object.keys(data) : 'N/A',
-                    data: data
-                });
-                
-                console.log('⏱️ Total processing time:', (performance.now() - startTime).toFixed(2) + 'ms');
-                console.groupEnd();
-                console.groupEnd();
-                
-                // Remove loading message
-                loadingMessage.remove();
-
-                // Add AI response
-                const aiMessage = document.createElement('div');
-                aiMessage.className = 'message ai';
-                
-                // Handle different response formats
-                let responseText = '';
-                if (typeof data === 'string') {
-                    responseText = data;
-                } else if (data.response) {
-                    responseText = data.response;
-                } else if (data.message) {
-                    responseText = data.message;
-                } else if (data.text) {
-                    responseText = data.text;
-                } else if (data.error) {
-                    responseText = `Error: ${data.error}`;
-                } else {
-                    responseText = JSON.stringify(data, null, 2);
-                }
-
-                aiMessage.innerHTML = `<strong>AI Assistant:</strong> ${responseText}`;
-                chatMessages.appendChild(aiMessage);
-
-            } catch (error) {
-                const errorTime = performance.now() - startTime;
-                console.group('❌ ERROR CAUGHT');
-                console.error('Error Type:', error.constructor.name);
-                console.error('Error Message:', error.message);
-                console.error('Error Stack:', error.stack);
-                console.error('Error occurred after:', errorTime.toFixed(2) + 'ms');
-                console.error('Full Error Object:', error);
-                
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    console.error('🔍 Fetch Error Analysis:', {
-                        possibleCauses: [
-                            'Network connectivity issue',
-                            'CORS policy blocking request',
-                            'Server not running',
-                            'Invalid URL',
-                            'SSL/TLS certificate issue'
-                        ],
-                        url: url,
-                        isFileProtocol: isFileProtocol
-                    });
-                }
-                
-                if (error.name === 'SyntaxError') {
-                    console.error('🔍 JSON Parse Error - Response might not be valid JSON');
-                }
-                
-                console.groupEnd();
-                console.groupEnd(); // Close main group
-                
-                // Remove loading message
-                loadingMessage.remove();
-
-                // Add error message
-                const errorMessage = document.createElement('div');
-                errorMessage.className = 'message ai';
-                
-                let errorText = '';
-                if (error.message.includes('CORS') || error.message.includes('Failed to fetch') || 
-                    error.message.includes('Access-Control-Allow-Origin') || error.message.includes('NetworkError')) {
-                    errorText = `
-                        <strong>AI Assistant:</strong> Connection Error - Cannot reach AI webhook.
-                        <br><br>
-                        <strong>⚠️ Possible Issues:</strong>
-                        <ul style="margin-left: 20px; margin-top: 10px;">
-                            <li>Are you running the local server? (Check terminal for "Dashboard server running!")</li>
-                            <li>Are you accessing via <code>http://localhost:8000</code>?</li>
-                            <li>Is the server still running? (Check terminal window)</li>
-                        </ul>
-                        <br>
-                        <strong>✅ Solution:</strong>
-                        <ol style="margin-left: 20px; margin-top: 10px;">
-                            <li>Open Terminal</li>
-                            <li>Run: <code>cd "Tudor Glen - Dev server"</code></li>
-                            <li>Run: <code>python3 server.py</code></li>
-                            <li>Make sure you see "Dashboard server running!" message</li>
-                            <li>Open <code>http://localhost:8000</code> in your browser</li>
-                        </ol>
-                    `;
-                } else {
-                    errorText = `
-                        <strong>AI Assistant:</strong> Error: ${error.message}
-                        <br><br>
-                        <strong>Debug Info:</strong> Check browser console (F12) for more details.
-                        <br><br>
-                        <strong>If using server:</strong> Check terminal for error messages.
-                    `;
-                }
-                
-                errorMessage.innerHTML = errorText;
-                chatMessages.appendChild(errorMessage);
-            } finally {
-                // Re-enable input
-                queryInput.disabled = false;
-                sendBtn.disabled = false;
-                queryInput.focus();
-
-                // Scroll to bottom
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
-
-        // Settings Functions
-        function openSettings() {
-            const modal = document.getElementById('settingsModal');
-            modal.style.display = 'block';
-            
-            // Load current settings
-            const refreshInterval = localStorage.getItem('refreshInterval') || '30';
-            const autoRefreshEnabled = localStorage.getItem('autoRefreshEnabled') !== 'false';
-            const defaultPeriod = localStorage.getItem('defaultPeriod') || 'year';
-            
-            document.getElementById('refreshInterval').value = refreshInterval;
-            document.getElementById('autoRefreshEnabled').checked = autoRefreshEnabled;
-            document.getElementById('defaultPeriod').value = defaultPeriod;
-            
-            // Set webhook URLs (read-only)
-            document.getElementById('invoiceWebhookUrl').value = INVOICE_WEBHOOK;
-            document.getElementById('aiWebhookUrl').value = AI_WEBHOOK;
-        }
-
-        function closeSettings() {
-            const modal = document.getElementById('settingsModal');
-            modal.style.display = 'none';
-        }
-
-        function saveSettings() {
-            const refreshInterval = document.getElementById('refreshInterval').value;
-            const autoRefreshEnabled = document.getElementById('autoRefreshEnabled').checked;
-            const defaultPeriod = document.getElementById('defaultPeriod').value;
-            
-            // Validate refresh interval
-            const intervalNum = parseInt(refreshInterval, 10);
-            if (isNaN(intervalNum) || intervalNum < 10 || intervalNum > 3600) {
-                alert('Refresh interval must be between 10 and 3600 seconds');
-                return;
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('refreshInterval', refreshInterval);
-            localStorage.setItem('autoRefreshEnabled', autoRefreshEnabled.toString());
-            localStorage.setItem('defaultPeriod', defaultPeriod);
-            
-            // Update auto-refresh
-            setupAutoRefresh();
-            
-            // Update default period if changed
-            if (defaultPeriod !== currentPeriod) {
-                filterByPeriod(defaultPeriod);
-            }
-            
-            // Close modal
-            closeSettings();
-            
-            // Show success message
-            const connectionText = document.getElementById('connectionText');
-            if (connectionText) {
-                const originalText = connectionText.textContent;
-                connectionText.textContent = 'Settings saved!';
-                connectionText.style.color = '#4ade80';
-                setTimeout(() => {
-                    connectionText.textContent = originalText;
-                    connectionText.style.color = '';
-                }, 2000);
-            }
-        }
-
-        // Close modal when clicking outside
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('settingsModal');
-            if (modal) {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        closeSettings();
-                    }
-                });
-            }
-            
-            // Load default period from settings
-            const savedPeriod = localStorage.getItem('defaultPeriod') || 'year';
-            if (savedPeriod) {
-                currentPeriod = savedPeriod;
-                // Update button state
-                document.querySelectorAll('.period-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                const activeBtn = document.querySelector(`[data-period="${savedPeriod}"]`);
-                if (activeBtn) {
-                    activeBtn.classList.add('active');
-                }
-            }
-
-            // Fetch AI suggestions on page load
-            fetchAISuggestions();
-        });
-
-        // AI Suggestions Functions
-        async function fetchAISuggestions() {
-            const suggestionsContent = document.getElementById('suggestionsContent');
-            const refreshBtn = document.getElementById('refreshSuggestionsBtn');
-            
-            // Show loading state
-            suggestionsContent.innerHTML = `
-                <div class="suggestion-loading">
-                    <div style="font-size: 3em; margin-bottom: 15px;">💡</div>
-                    <p>Generating AI suggestions...</p>
-                </div>
-            `;
-            refreshBtn.disabled = true;
-            refreshBtn.textContent = '⏳ Loading...';
-
-            try {
-                // Prepare data for AI suggestions
-                const suggestionData = {
-                    type: 'suggestions',
-                    invoiceData: fullInvoiceData ? {
-                        totalInvoices: fullInvoiceData.totalInvoices,
-                        totalRevenue: fullInvoiceData.totalRevenue,
-                        avgPerDay: fullInvoiceData.avgPerDay,
-                        avgPerWeekday: fullInvoiceData.avgPerWeekday,
-                        avgPerSaturday: fullInvoiceData.avgPerSaturday,
-                        dailyData: fullInvoiceData.dailyData.slice(-30) // Last 30 days for context
-                    } : null,
-                    currentPeriod: currentPeriod,
-                    timestamp: new Date().toISOString()
-                };
-
-                console.log('Fetching AI suggestions with data:', suggestionData);
-
-                // Determine webhook URL
-                const isFileProtocol = window.location.protocol === 'file:';
-                const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                const CORS_PROXY = 'https://corsproxy.io/?';
-                const AI_WEBHOOK = 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a4c7-c38293d1d768';
-                
-                const suggestionsUrl = (isFileProtocol || isGitHubPages)
-                    ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(AI_WEBHOOK) : AI_WEBHOOK)
-                    : '/proxy/ai';
-
-                // Send POST request to AI webhook
-                const response = await fetch(suggestionsUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(suggestionData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('AI suggestions response:', data);
-
-                // Parse and display suggestions
-                displaySuggestions(data);
-
-            } catch (error) {
-                console.error('Error fetching AI suggestions:', error);
-                suggestionsContent.innerHTML = `
-                    <div class="suggestion-error">
-                        <div style="font-size: 3em; margin-bottom: 15px;">⚠️</div>
-                        <p>Failed to load suggestions</p>
-                        <p style="font-size: 0.9em; margin-top: 10px; color: #999;">${error.message}</p>
-                        <button onclick="fetchAISuggestions()" style="margin-top: 15px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                            Try Again
-                        </button>
-                    </div>
-                `;
-            } finally {
-                refreshBtn.disabled = false;
-                refreshBtn.textContent = '🔄 Refresh';
-            }
-        }
-
-        function displaySuggestions(data) {
-            const suggestionsContent = document.getElementById('suggestionsContent');
-            
-            // Handle different response formats
-            let suggestions = [];
-            
-            if (Array.isArray(data)) {
-                suggestions = data;
-            } else if (data.suggestions && Array.isArray(data.suggestions)) {
-                suggestions = data.suggestions;
-            } else if (data.response) {
-                // If response is a string, try to parse it or create a single suggestion
-                try {
-                    const parsed = JSON.parse(data.response);
-                    suggestions = Array.isArray(parsed) ? parsed : (parsed.suggestions || [parsed]);
-                } catch (e) {
-                    suggestions = [{
-                        title: 'AI Insight',
-                        text: data.response,
-                        category: 'General',
-                        timestamp: new Date().toISOString()
-                    }];
-                }
-            } else if (data.message) {
-                suggestions = [{
-                    title: 'AI Insight',
-                    text: data.message,
-                    category: 'General',
-                    timestamp: new Date().toISOString()
-                }];
-            } else if (typeof data === 'string') {
-                suggestions = [{
-                    title: 'AI Insight',
-                    text: data,
-                    category: 'General',
-                    timestamp: new Date().toISOString()
-                }];
-            } else {
-                // Try to extract suggestions from the object
-                suggestions = Object.keys(data).map(key => ({
-                    title: key.charAt(0).toUpperCase() + key.slice(1),
-                    text: typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]),
-                    category: 'General',
-                    timestamp: new Date().toISOString()
-                }));
-            }
-
-            if (suggestions.length === 0) {
-                suggestionsContent.innerHTML = `
-                    <div class="suggestion-loading">
-                        <div style="font-size: 3em; margin-bottom: 15px;">💡</div>
-                        <p>No suggestions available at this time.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            // Display suggestions
-            suggestionsContent.innerHTML = suggestions.map((suggestion, index) => {
-                const title = suggestion.title || suggestion.heading || `Suggestion ${index + 1}`;
-                const text = suggestion.text || suggestion.content || suggestion.message || JSON.stringify(suggestion);
-                const category = suggestion.category || suggestion.type || 'General';
-                const timestamp = suggestion.timestamp ? new Date(suggestion.timestamp).toLocaleDateString() : 'Just now';
-                
-                return `
-                    <div class="suggestion-item">
-                        <div class="suggestion-title">
-                            <span>💡</span>
-                            <span>${title}</span>
-                        </div>
-                        <div class="suggestion-text">${text}</div>
-                        <div class="suggestion-meta">
-                            <span class="suggestion-category">${category}</span>
-                            <span>${timestamp}</span>
-                        </div>
-                    </div>
-                `;
-                }).join('');
-        }
-
+        // KPI Cards Update
         function updateKPICards(data) {
-            if (!data || !Array.isArray(data) || data.length === 0) {
-                console.warn('No data available for KPI cards');
-                return;
-            }
+            if (!data || !Array.isArray(data) || data.length === 0) return;
 
-            // Get yesterday's date (in local timezone)
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             yesterday.setHours(0, 0, 0, 0);
             const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-            // Get day before yesterday
             const dayBefore = new Date(yesterday);
             dayBefore.setDate(dayBefore.getDate() - 1);
             const dayBeforeStr = dayBefore.toISOString().split('T')[0];
 
-            // Get same weekday last week
             const lastWeek = new Date(yesterday);
             lastWeek.setDate(lastWeek.getDate() - 7);
             const lastWeekStr = lastWeek.toISOString().split('T')[0];
 
-            // Find yesterday's data
             const yesterdayData = data.find(d => d.txn_day === yesterdayStr);
             const dayBeforeData = data.find(d => d.txn_day === dayBeforeStr);
             const lastWeekData = data.find(d => d.txn_day === lastWeekStr);
 
-            // Calculate 30-day rolling average (excluding yesterday)
             const thirtyDaysAgo = new Date(yesterday);
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             const avg30Days = calculate30DayAverage(data, yesterdayStr, thirtyDaysAgo.toISOString().split('T')[0]);
 
-            // Update each KPI card
             updateKPICard('kpiRevenue', 'kpiRevenueComparisons', {
                 value: yesterdayData ? yesterdayData.revenue : null,
                 prevDay: dayBeforeData ? dayBeforeData.revenue : null,
@@ -2957,7 +936,6 @@
                 avg30d: avg30Days.invoices
             }, (val) => val.toLocaleString());
 
-            // Transactions = Invoices (based on data structure)
             updateKPICard('kpiTransactions', 'kpiTransactionsComparisons', {
                 value: yesterdayData ? yesterdayData.invoices : null,
                 prevDay: dayBeforeData ? dayBeforeData.invoices : null,
@@ -2965,7 +943,6 @@
                 avg30d: avg30Days.invoices
             }, (val) => val.toLocaleString());
 
-            // Average Invoice Value = Revenue / Invoices
             const avgInvoiceValue = yesterdayData && yesterdayData.invoices > 0 
                 ? yesterdayData.revenue / yesterdayData.invoices 
                 : null;
@@ -3011,62 +988,35 @@
 
             if (!valueEl || !comparisonsEl) return;
 
-            // Update main value
             if (data.value !== null && data.value !== undefined) {
                 valueEl.textContent = formatter(data.value);
             } else {
                 valueEl.textContent = '—';
             }
 
-            // Calculate and display comparisons
             const comparisons = [];
 
-            // Day before yesterday
             if (data.prevDay !== null && data.prevDay !== undefined && data.value !== null) {
                 const change = calculatePercentageChange(data.prevDay, data.value);
-                comparisons.push({
-                    label: 'vs Day Before',
-                    value: change,
-                    raw: data.prevDay
-                });
+                comparisons.push({ label: 'vs Day Before', value: change });
             } else {
-                comparisons.push({
-                    label: 'vs Day Before',
-                    value: null
-                });
+                comparisons.push({ label: 'vs Day Before', value: null });
             }
 
-            // Same weekday last week
             if (data.lastWeek !== null && data.lastWeek !== undefined && data.value !== null) {
                 const change = calculatePercentageChange(data.lastWeek, data.value);
-                comparisons.push({
-                    label: 'vs Last Week',
-                    value: change,
-                    raw: data.lastWeek
-                });
+                comparisons.push({ label: 'vs Last Week', value: change });
             } else {
-                comparisons.push({
-                    label: 'vs Last Week',
-                    value: null
-                });
+                comparisons.push({ label: 'vs Last Week', value: null });
             }
 
-            // 30-day average
             if (data.avg30d !== null && data.avg30d !== undefined && data.value !== null) {
                 const change = calculatePercentageChange(data.avg30d, data.value);
-                comparisons.push({
-                    label: 'vs 30-Day Avg',
-                    value: change,
-                    raw: data.avg30d
-                });
+                comparisons.push({ label: 'vs 30-Day Avg', value: change });
             } else {
-                comparisons.push({
-                    label: 'vs 30-Day Avg',
-                    value: null
-                });
+                comparisons.push({ label: 'vs 30-Day Avg', value: null });
             }
 
-            // Render comparisons
             comparisonsEl.innerHTML = comparisons.map(comp => {
                 if (comp.value === null) {
                     return `
@@ -3090,7 +1040,7 @@
                     <div class="comparison-item">
                         <span class="comparison-label">${comp.label}</span>
                         <span class="comparison-value ${className}">
-                            <span class="comparison-arrow">${arrow}</span>
+                            <span>${arrow}</span>
                             ${absValue.toFixed(1)}%
                         </span>
                     </div>
@@ -3101,6 +1051,628 @@
         function calculatePercentageChange(oldValue, newValue) {
             if (!oldValue || oldValue === 0) return null;
             return ((newValue - oldValue) / oldValue) * 100;
+        }
+
+        // Chart Updates
+        function updateDisplayForPeriod(period) {
+            if (!fullInvoiceData) return;
+            currentPeriod = period;
+            updateComparison();
+        }
+
+        function updateComparison() {
+            if (!fullInvoiceData) return;
+
+            const period = document.querySelector('input[name="viewPeriod"]:checked')?.value || 'year';
+            const comparisons = Array.from(document.querySelectorAll('input[name="comparison"]:checked')).map(cb => cb.value);
+            
+            currentPeriod = period;
+            selectedComparisons = comparisons;
+            updateDisplayForPeriodWithComparisons(period, comparisons);
+        }
+
+        function updateDisplayForPeriodWithComparisons(period, comparisons) {
+            if (!fullInvoiceData) return;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            let startDate, endDate;
+            endDate = yesterday;
+
+            switch(period) {
+                case 'today':
+                    startDate = new Date(yesterday);
+                    break;
+                case 'week':
+                    startDate = new Date(yesterday);
+                    startDate.setDate(startDate.getDate() - 6);
+                    break;
+                case 'month':
+                    startDate = new Date(yesterday);
+                    startDate.setDate(startDate.getDate() - 29);
+                    break;
+                case 'year':
+                default:
+                    startDate = new Date(yesterday);
+                    startDate.setDate(startDate.getDate() - 364);
+                    break;
+            }
+
+            const mainData = fullInvoiceData.dailyData.filter(item => {
+                return item.date >= startDate && item.date <= endDate;
+            });
+
+            const comparisonDatasets = [];
+            const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
+            let colorIndex = 0;
+
+            comparisons.forEach(comp => {
+                let compData = [];
+                switch(comp) {
+                    case 'sameDayLastYear':
+                        const lastYearDate = new Date(yesterday);
+                        lastYearDate.setFullYear(lastYearDate.getFullYear() - 1);
+                        const lastYearData = fullInvoiceData.dailyData.find(d => 
+                            d.date.toISOString().split('T')[0] === lastYearDate.toISOString().split('T')[0]
+                        );
+                        if (lastYearData) {
+                            compData = [lastYearData];
+                        }
+                        break;
+                    case 'sameWeekLastYear':
+                        const lastYearWeekStart = new Date(startDate);
+                        lastYearWeekStart.setFullYear(lastYearWeekStart.getFullYear() - 1);
+                        const lastYearWeekEnd = new Date(endDate);
+                        lastYearWeekEnd.setFullYear(lastYearWeekEnd.getFullYear() - 1);
+                        compData = fullInvoiceData.dailyData.filter(d => 
+                            d.date >= lastYearWeekStart && d.date <= lastYearWeekEnd
+                        );
+                        break;
+                    case 'sameMonthLastYear':
+                        const lastYearMonthStart = new Date(startDate);
+                        lastYearMonthStart.setFullYear(lastYearMonthStart.getFullYear() - 1);
+                        const lastYearMonthEnd = new Date(endDate);
+                        lastYearMonthEnd.setFullYear(lastYearMonthEnd.getFullYear() - 1);
+                        compData = fullInvoiceData.dailyData.filter(d => 
+                            d.date >= lastYearMonthStart && d.date <= lastYearMonthEnd
+                        );
+                        break;
+                    case 'lastYear':
+                        const lastYearStart = new Date(startDate);
+                        lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
+                        const lastYearEnd = new Date(endDate);
+                        lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
+                        compData = fullInvoiceData.dailyData.filter(d => 
+                            d.date >= lastYearStart && d.date <= lastYearEnd
+                        );
+                        break;
+                    case 'avgDay':
+                        const allDays = fullInvoiceData.dailyData.filter(d => d.date <= endDate);
+                        const avgDayInvoices = allDays.length > 0 
+                            ? allDays.reduce((sum, item) => sum + (item.count || 0), 0) / allDays.length
+                            : 0;
+                        const avgDayRevenue = allDays.length > 0 
+                            ? allDays.reduce((sum, item) => sum + (item.revenue || 0), 0) / allDays.length
+                            : 0;
+                        compData = mainData.map(item => ({
+                            date: item.date,
+                            count: avgDayInvoices,
+                            revenue: avgDayRevenue
+                        }));
+                        break;
+                    case 'avgWeek':
+                        const allWeeks = [];
+                        for (let i = 0; i < mainData.length; i += 7) {
+                            const week = mainData.slice(i, i + 7);
+                            if (week.length > 0) {
+                                const weekInvoices = week.reduce((sum, item) => sum + (item.count || 0), 0) / week.length;
+                                const weekRevenue = week.reduce((sum, item) => sum + (item.revenue || 0), 0) / week.length;
+                                week.forEach(item => {
+                                    allWeeks.push({
+                                        date: item.date,
+                                        count: weekInvoices,
+                                        revenue: weekRevenue
+                                    });
+                                });
+                            }
+                        }
+                        compData = allWeeks;
+                        break;
+                    case 'avgMonth':
+                        const allMonths = [];
+                        const monthGroups = {};
+                        mainData.forEach(item => {
+                            const monthKey = item.date.getFullYear() + '-' + item.date.getMonth();
+                            if (!monthGroups[monthKey]) {
+                                monthGroups[monthKey] = [];
+                            }
+                            monthGroups[monthKey].push(item);
+                        });
+                        Object.values(monthGroups).forEach(month => {
+                            const monthInvoices = month.reduce((sum, item) => sum + (item.count || 0), 0) / month.length;
+                            const monthRevenue = month.reduce((sum, item) => sum + (item.revenue || 0), 0) / month.length;
+                            month.forEach(item => {
+                                allMonths.push({
+                                    date: item.date,
+                                    count: monthInvoices,
+                                    revenue: monthRevenue
+                                });
+                            });
+                        });
+                        compData = allMonths;
+                        break;
+                }
+
+                if (compData.length > 0) {
+                    comparisonDatasets.push({
+                        label: comp.replace(/([A-Z])/g, ' $1').trim(),
+                        data: compData.map(item => ({
+                            x: item.date,
+                            y: item.count
+                        })),
+                        borderColor: colors[colorIndex % colors.length],
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        tension: 0.4
+                    });
+                    colorIndex++;
+                }
+            });
+
+            updateChartWithComparisons(mainData, comparisonDatasets);
+            updateDayOfWeekChart(mainData);
+            updateMonthlyTrendsChart(mainData);
+            updateRevenueVsInvoicesChart(mainData);
+            updateGrowthRateChart(mainData);
+            updateTopDaysChart(mainData);
+            updateAvgRevenuePerInvoiceChart(mainData);
+        }
+
+        function updateChartWithComparisons(mainData, comparisonDatasets) {
+            const ctx = document.getElementById('invoiceChart').getContext('2d');
+            
+            if (invoiceChart) {
+                invoiceChart.destroy();
+            }
+
+            const datasets = [
+                {
+                    label: 'Invoices',
+                    data: mainData.map(item => ({
+                        x: item.date,
+                        y: item.count
+                    })),
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Revenue',
+                    data: mainData.map(item => ({
+                        x: item.date,
+                        y: item.revenue
+                    })),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                },
+                ...comparisonDatasets
+            ];
+
+            invoiceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            borderColor: '#334155',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: period === 'year' ? 'month' : period === 'month' ? 'day' : 'day'
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Invoices',
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Revenue ($)',
+                                color: '#94a3b8'
+                            },
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Analytics Chart Functions (simplified versions)
+        function updateDayOfWeekChart(dailyData) {
+            const ctx = document.getElementById('dayOfWeekChart');
+            if (!ctx) return;
+            
+            if (dayOfWeekChart) dayOfWeekChart.destroy();
+            
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dayData = new Array(7).fill(0).map(() => ({ invoices: 0, count: 0 }));
+            
+            dailyData.forEach(item => {
+                const day = item.date.getDay();
+                dayData[day].invoices += item.count;
+                dayData[day].count++;
+            });
+            
+            const avgInvoices = dayData.map(d => d.count > 0 ? d.invoices / d.count : 0);
+            
+            dayOfWeekChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: dayNames,
+                    datasets: [{
+                        label: 'Avg Invoices',
+                        data: avgInvoices,
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMonthlyTrendsChart(dailyData) {
+            const ctx = document.getElementById('monthlyChart');
+            if (!ctx) return;
+            
+            if (monthlyChart) monthlyChart.destroy();
+            
+            const monthData = {};
+            dailyData.forEach(item => {
+                const monthKey = item.date.getFullYear() + '-' + (item.date.getMonth() + 1);
+                if (!monthData[monthKey]) {
+                    monthData[monthKey] = { invoices: 0, revenue: 0, count: 0 };
+                }
+                monthData[monthKey].invoices += item.count;
+                monthData[monthKey].revenue += item.revenue;
+                monthData[monthKey].count++;
+            });
+            
+            const labels = Object.keys(monthData).sort();
+            const invoices = labels.map(key => monthData[key].invoices);
+            
+            monthlyChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invoices',
+                        data: invoices,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRevenueVsInvoicesChart(dailyData) {
+            const ctx = document.getElementById('revenueVsInvoicesChart');
+            if (!ctx) return;
+            
+            if (revenueVsInvoicesChart) revenueVsInvoicesChart.destroy();
+            
+            revenueVsInvoicesChart = new Chart(ctx.getContext('2d'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Revenue vs Invoices',
+                        data: dailyData.map(item => ({
+                            x: item.count,
+                            y: item.revenue
+                        })),
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Invoices', color: '#94a3b8' },
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Revenue ($)', color: '#94a3b8' },
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateGrowthRateChart(dailyData) {
+            const ctx = document.getElementById('growthRateChart');
+            if (!ctx) return;
+            
+            if (growthRateChart) growthRateChart.destroy();
+            
+            const growthRates = [];
+            const labels = [];
+            
+            for (let i = 1; i < dailyData.length; i++) {
+                const prev = dailyData[i - 1].count;
+                const curr = dailyData[i].count;
+                if (prev > 0) {
+                    growthRates.push(((curr - prev) / prev) * 100);
+                    labels.push(dailyData[i].date.toLocaleDateString());
+                }
+            }
+            
+            growthRateChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels.slice(-30),
+                    datasets: [{
+                        label: 'Growth Rate %',
+                        data: growthRates.slice(-30),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#334155' },
+                            ticks: { 
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopDaysChart(dailyData) {
+            const ctx = document.getElementById('topDaysChart');
+            if (!ctx) return;
+            
+            if (topDaysChart) topDaysChart.destroy();
+            
+            const sorted = [...dailyData].sort((a, b) => b.count - a.count).slice(0, 10);
+            
+            topDaysChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(item => item.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Invoices',
+                        data: sorted.map(item => item.count),
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAvgRevenuePerInvoiceChart(dailyData) {
+            const ctx = document.getElementById('avgRevenuePerInvoiceChart');
+            if (!ctx) return;
+            
+            if (avgRevenuePerInvoiceChart) avgRevenuePerInvoiceChart.destroy();
+            
+            const avgRevenue = dailyData.map(item => 
+                item.count > 0 ? item.revenue / item.count : 0
+            );
+            
+            avgRevenuePerInvoiceChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: dailyData.map(item => item.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Avg Revenue per Invoice',
+                        data: avgRevenue,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { 
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
         }
     </script>
 </body>
