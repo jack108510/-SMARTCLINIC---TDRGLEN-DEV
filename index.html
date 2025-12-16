@@ -596,8 +596,61 @@
             </div>
         </div>
 
-        <!-- Main Charts Section -->
-        <div class="charts-section">
+            <!-- Staff Analytics Section -->
+            <div style="margin-top: 48px;">
+            <div class="header" style="margin-bottom: 32px; padding: 24px;">
+                <div class="header-content">
+                    <h1 style="font-size: 2rem; margin: 0;">👥 Staff Analytics</h1>
+                    <p style="margin: 8px 0 0 0;">Staff performance and productivity insights</p>
+                </div>
+            </div>
+
+            <!-- Staff KPI Cards -->
+            <div class="kpi-grid" style="margin-bottom: 32px;">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Total Staff Hours</span>
+                        <span class="kpi-icon">⏰</span>
+                    </div>
+                <div class="kpi-value" id="staffTotalHours">-</div>
+                <div class="kpi-label">Current Month</div>
+                    <div class="kpi-comparisons" id="staffTotalHoursComparisons"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Active Staff Members</span>
+                        <span class="kpi-icon">👤</span>
+                    </div>
+                <div class="kpi-value" id="staffActiveMembers">-</div>
+                <div class="kpi-label">Current Month</div>
+                    <div class="kpi-comparisons" id="staffActiveMembersComparisons"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Avg Hours per Staff</span>
+                        <span class="kpi-icon">📊</span>
+                    </div>
+                <div class="kpi-value" id="staffAvgHours">-</div>
+                <div class="kpi-label">Current Month</div>
+                    <div class="kpi-comparisons" id="staffAvgHoursComparisons"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Productivity Score</span>
+                        <span class="kpi-icon">⚡</span>
+                    </div>
+                <div class="kpi-value" id="staffProductivity">-</div>
+                <div class="kpi-label">Current Month</div>
+                    <div class="kpi-comparisons" id="staffProductivityComparisons"></div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Charts Page -->
+        <div id="chartsPage" class="page">
+            <!-- Main Charts Section -->
+            <div class="charts-section">
             <div class="chart-card">
                 <div class="chart-header">
                     <h2 class="chart-title">📈 Revenue & Invoices Trend</h2>
@@ -664,96 +717,56 @@
             </div>
         </div>
 
-            <!-- Analytics Grid -->
-        <div class="analytics-grid">
-            <div class="analytics-card">
-                <h3>📅 Day of Week Analysis</h3>
-                <div class="analytics-chart">
-                    <canvas id="dayOfWeekChart"></canvas>
+            <!-- Financial Analytics Charts -->
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>📅 Day of Week Analysis</h3>
+                    <div class="analytics-chart">
+                        <canvas id="dayOfWeekChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>📆 Monthly Trends</h3>
+                    <div class="analytics-chart">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>💰 Revenue vs Invoices</h3>
+                    <div class="analytics-chart">
+                        <canvas id="revenueVsInvoicesChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>📈 Growth Rate</h3>
+                    <div class="analytics-chart">
+                        <canvas id="growthRateChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>🏆 Top 10 Invoice Days</h3>
+                    <div class="analytics-chart">
+                        <canvas id="topDaysChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>💲 Avg Revenue per Invoice</h3>
+                    <div class="analytics-chart">
+                        <canvas id="avgRevenuePerInvoiceChart"></canvas>
+                    </div>
                 </div>
             </div>
-            <div class="analytics-card">
-                <h3>📆 Monthly Trends</h3>
-                <div class="analytics-chart">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
-            <div class="analytics-card">
-                <h3>💰 Revenue vs Invoices</h3>
-                <div class="analytics-chart">
-                    <canvas id="revenueVsInvoicesChart"></canvas>
-                </div>
-            </div>
-            <div class="analytics-card">
-                <h3>📈 Growth Rate</h3>
-                <div class="analytics-chart">
-                    <canvas id="growthRateChart"></canvas>
-                </div>
-            </div>
-            <div class="analytics-card">
-                <h3>🏆 Top 10 Invoice Days</h3>
-                <div class="analytics-chart">
-                    <canvas id="topDaysChart"></canvas>
-                </div>
-            </div>
-            <div class="analytics-card">
-                <h3>💲 Avg Revenue per Invoice</h3>
-                <div class="analytics-chart">
-                    <canvas id="avgRevenuePerInvoiceChart"></canvas>
-                </div>
-            </div>
-        </div>
 
-            <!-- Staff Analytics Section -->
+            <!-- Staff Analytics Charts Section -->
             <div style="margin-top: 48px;">
-            <div class="header" style="margin-bottom: 32px; padding: 24px;">
-                <div class="header-content">
-                    <h1 style="font-size: 2rem; margin: 0;">👥 Staff Analytics</h1>
-                    <p style="margin: 8px 0 0 0;">Staff performance and productivity insights</p>
+                <div class="header" style="margin-bottom: 32px; padding: 24px;">
+                    <div class="header-content">
+                        <h1 style="font-size: 2rem; margin: 0;">👥 Staff Analytics Charts</h1>
+                        <p style="margin: 8px 0 0 0;">Staff performance and productivity visualizations</p>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Staff KPI Cards -->
-            <div class="kpi-grid" style="margin-bottom: 32px;">
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Total Staff Hours</span>
-                        <span class="kpi-icon">⏰</span>
-                    </div>
-                <div class="kpi-value" id="staffTotalHours">-</div>
-                <div class="kpi-label">Current Month</div>
-                    <div class="kpi-comparisons" id="staffTotalHoursComparisons"></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Active Staff Members</span>
-                        <span class="kpi-icon">👤</span>
-                    </div>
-                <div class="kpi-value" id="staffActiveMembers">-</div>
-                <div class="kpi-label">Current Month</div>
-                    <div class="kpi-comparisons" id="staffActiveMembersComparisons"></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Avg Hours per Staff</span>
-                        <span class="kpi-icon">📊</span>
-                    </div>
-                <div class="kpi-value" id="staffAvgHours">-</div>
-                <div class="kpi-label">Current Month</div>
-                    <div class="kpi-comparisons" id="staffAvgHoursComparisons"></div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Productivity Score</span>
-                        <span class="kpi-icon">⚡</span>
-                    </div>
-                <div class="kpi-value" id="staffProductivity">-</div>
-                <div class="kpi-label">Current Month</div>
-                    <div class="kpi-comparisons" id="staffProductivityComparisons"></div>
-                </div>
-            </div>
-
-            <!-- Staff Charts -->
+                <!-- Staff Charts -->
             <div class="analytics-grid">
                 <div class="analytics-card">
                     <h3>👥 Staff Hours Trend</h3>
