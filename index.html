@@ -915,35 +915,77 @@
 
         // Process and Display Data
         function displayData(data) {
+            console.log('=== DISPLAY DATA START ===');
+            console.log('Input data type:', typeof data);
+            console.log('Input is array:', Array.isArray(data));
+            console.log('Input data length:', Array.isArray(data) ? data.length : 'N/A');
+            
             if (!data || !Array.isArray(data) || data.length === 0) {
-                console.warn('No data available');
+                console.warn('=== NO DATA AVAILABLE ===');
+                console.warn('Data:', data);
                 return;
             }
 
             try {
+                console.log('Processing invoice data...');
                 const invoiceData = processInvoiceData(data);
                 fullInvoiceData = invoiceData;
+                console.log('Invoice data processed, updating KPI cards...');
                 updateKPICards(data);
+                console.log('Updating display for period:', currentPeriod);
                 updateDisplayForPeriod(currentPeriod);
                 
                 // Process staff data from the same webhook
+                console.log('=== PROCESSING STAFF DATA ===');
                 processStaffData(data);
-                updateStaffKPICards(data);
-                updateStaffCharts();
+                console.log('Staff data processed, staffData:', staffData);
+                
+                if (staffData && staffData.dailyData && staffData.dailyData.length > 0) {
+                    console.log('Updating staff KPI cards...');
+                    updateStaffKPICards(data);
+                    console.log('Updating staff charts...');
+                    updateStaffCharts();
+                } else {
+                    console.warn('=== NO STAFF DATA TO DISPLAY ===');
+                    console.warn('staffData:', staffData);
+                }
             } catch (error) {
-                console.error('Error displaying data:', error);
+                console.error('=== ERROR IN DISPLAY DATA ===');
+                console.error('Error type:', error.constructor.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
             }
+            console.log('=== DISPLAY DATA END ===');
         }
 
         // Process Staff Data
         function processStaffData(data) {
+            console.log('=== PROCESS STAFF DATA START ===');
+            
             if (!data || !Array.isArray(data)) {
-                console.log('processStaffData: No data or not an array');
+                console.error('processStaffData: No data or not an array');
+                console.error('Data received:', data);
                 return;
             }
 
             console.log('processStaffData: Processing', data.length, 'items');
-            console.log('processStaffData: First item sample:', data[0]);
+            
+            // Analyze data structure
+            if (data.length > 0) {
+                console.log('processStaffData: First item:', JSON.stringify(data[0], null, 2));
+                console.log('processStaffData: First item keys:', Object.keys(data[0]));
+                
+                // Check for various possible staff data fields
+                const firstItem = data[0];
+                console.log('processStaffData: Checking for staff fields in first item:');
+                console.log('  - staffid:', firstItem.staffid);
+                console.log('  - staff_name:', firstItem.staff_name);
+                console.log('  - month_start:', firstItem.month_start);
+                console.log('  - firstname:', firstItem.firstname);
+                console.log('  - lastname:', firstItem.lastname);
+                console.log('  - invoices_touched:', firstItem.invoices_touched);
+                console.log('  - txn_day:', firstItem.txn_day); // Invoice data field
+            }
 
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
@@ -957,8 +999,24 @@
             const hasStaffData = data.some(item => item.staffid || item.staff_name || item.month_start);
             
             console.log('processStaffData: Has staff data?', hasStaffData);
+            
             if (!hasStaffData) {
-                console.log('No staff data found in webhook response. Sample keys:', data[0] ? Object.keys(data[0]) : 'no data');
+                console.warn('=== NO STAFF DATA DETECTED ===');
+                console.warn('Checking all items for staff fields...');
+                
+                // Check each item for staff fields
+                const itemsWithStaffFields = data.map((item, index) => {
+                    const hasStaff = !!(item.staffid || item.staff_name || item.month_start || item.firstname || item.lastname);
+                    return { index, hasStaff, keys: Object.keys(item) };
+                }).filter(item => item.hasStaff);
+                
+                console.warn('Items with potential staff fields:', itemsWithStaffFields.length);
+                if (itemsWithStaffFields.length > 0) {
+                    console.warn('First item with staff fields:', itemsWithStaffFields[0]);
+                    console.warn('Sample data item:', data[itemsWithStaffFields[0].index]);
+                } else {
+                    console.warn('No items found with staff fields. Sample keys from first item:', data[0] ? Object.keys(data[0]) : 'no data');
+                }
                 return;
             }
 
@@ -967,12 +1025,25 @@
             const staffMembers = new Set();
             let processedCount = 0;
             let skippedCount = 0;
+            const skippedItems = [];
 
+            console.log('processStaffData: Starting to process items...');
+            
             data.forEach((item, index) => {
                 // Check if this is a staff record (has month_start and staff identifier)
-                if (item.month_start && (item.staffid || item.staff_name || item.firstname || item.lastname)) {
+                const hasMonthStart = !!item.month_start;
+                const hasStaffId = !!(item.staffid || item.staff_name || item.firstname || item.lastname);
+                
+                if (hasMonthStart && hasStaffId) {
                     const dateStr = item.month_start;
                     const date = new Date(dateStr + 'T00:00:00');
+                    
+                    if (isNaN(date.getTime())) {
+                        console.warn(`processStaffData: Invalid date for item ${index}:`, dateStr);
+                        skippedCount++;
+                        skippedItems.push({ index, reason: 'Invalid date', item });
+                        return;
+                    }
                     
                     // Don't filter by date range - include all staff data
                     if (!staffByDate[dateStr]) {
@@ -1003,14 +1074,40 @@
                     
                     staffMembers.add(staffMember.staffid || staffMember.staff_name);
                     processedCount++;
+                    
+                    if (processedCount <= 3) {
+                        console.log(`processStaffData: Processed item ${index}:`, {
+                            month_start: dateStr,
+                            staff_name: staffMember.staff_name,
+                            invoices: staffMember.invoices_touched,
+                            revenue: staffMember.revenue
+                        });
+                    }
                 } else {
                     skippedCount++;
+                    if (skippedCount <= 5) {
+                        skippedItems.push({ 
+                            index, 
+                            reason: hasMonthStart ? 'No staff identifier' : 'No month_start',
+                            hasMonthStart,
+                            hasStaffId,
+                            itemKeys: Object.keys(item)
+                        });
+                    }
                 }
             });
 
-            console.log('processStaffData: Processed', processedCount, 'staff records, skipped', skippedCount);
+            console.log('processStaffData: Processed', processedCount, 'staff records');
+            console.log('processStaffData: Skipped', skippedCount, 'records');
+            if (skippedItems.length > 0) {
+                console.log('processStaffData: Sample skipped items:', skippedItems.slice(0, 3));
+            }
             console.log('processStaffData: Found', Object.keys(staffByDate).length, 'unique months');
-            console.log('processStaffData: Staff members:', Array.from(staffMembers));
+            if (Object.keys(staffByDate).length > 0) {
+                console.log('processStaffData: Month keys:', Object.keys(staffByDate).sort());
+                console.log('processStaffData: Sample month data:', staffByDate[Object.keys(staffByDate)[0]]);
+            }
+            console.log('processStaffData: Staff members found:', Array.from(staffMembers));
 
             // Convert to daily array format
             const staffDailyData = Object.values(staffByDate).map(dayData => {
@@ -1042,26 +1139,49 @@
                     : 0
             };
 
-            console.log('Processed staff data:', staffData);
-            console.log('Staff daily data count:', staffDailyData.length);
+            console.log('=== PROCESSED STAFF DATA SUMMARY ===');
+            console.log('staffData object:', staffData);
+            console.log('Daily data count:', staffDailyData.length);
+            console.log('Total staff members:', staffMembers.size);
+            console.log('Total hours:', staffData.totalHours);
             if (staffDailyData.length > 0) {
-                console.log('First staff data entry:', staffDailyData[0]);
-                console.log('Last staff data entry:', staffDailyData[staffDailyData.length - 1]);
+                console.log('First staff data entry:', JSON.stringify(staffDailyData[0], null, 2));
+                console.log('Last staff data entry:', JSON.stringify(staffDailyData[staffDailyData.length - 1], null, 2));
+                console.log('All months:', staffDailyData.map(d => d.date.toISOString().split('T')[0].substring(0, 7)));
+            } else {
+                console.warn('WARNING: No staff daily data created!');
             }
+            console.log('=== PROCESS STAFF DATA END ===');
         }
 
         // Update Staff KPI Cards
         function updateStaffKPICards(data) {
+            console.log('=== UPDATE STAFF KPI CARDS START ===');
+            
             if (!data || !Array.isArray(data) || data.length === 0) {
-                console.log('updateStaffKPICards: No input data');
+                console.error('updateStaffKPICards: No input data');
                 return;
             }
-            if (!staffData || !staffData.dailyData || staffData.dailyData.length === 0) {
-                console.log('updateStaffKPICards: No staff data available. staffData:', staffData);
+            
+            if (!staffData) {
+                console.error('updateStaffKPICards: staffData is null/undefined');
+                return;
+            }
+            
+            if (!staffData.dailyData) {
+                console.error('updateStaffKPICards: staffData.dailyData is null/undefined');
+                console.error('staffData keys:', Object.keys(staffData));
+                return;
+            }
+            
+            if (staffData.dailyData.length === 0) {
+                console.warn('updateStaffKPICards: staffData.dailyData is empty array');
+                console.warn('staffData:', JSON.stringify(staffData, null, 2));
                 return;
             }
             
             console.log('updateStaffKPICards: Updating with', staffData.dailyData.length, 'months of data');
+            console.log('updateStaffKPICards: Staff data sample:', staffData.dailyData.slice(0, 3));
 
             // Since data is monthly (month_start), get current month and previous month
             const today = new Date();
