@@ -555,6 +555,57 @@
                 <canvas id="invoiceChart"></canvas>
             </div>
         </div>
+
+        <!-- Additional Analytics Charts -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; margin-top: 30px;">
+            <!-- Day of Week Analysis -->
+            <div class="chart-container">
+                <h2>📅 Day of Week Analysis</h2>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="dayOfWeekChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Monthly Trends -->
+            <div class="chart-container">
+                <h2>📆 Monthly Trends</h2>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Revenue vs Invoices -->
+            <div class="chart-container">
+                <h2>💰 Revenue vs Invoices</h2>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="revenueVsInvoicesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Growth Rate -->
+            <div class="chart-container">
+                <h2>📈 Growth Rate</h2>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Performing Days -->
+            <div class="chart-container">
+                <h2>🏆 Top 10 Days</h2>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="topDaysChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Average Revenue per Invoice -->
+            <div class="chart-container">
+                <h2>💵 Average Revenue per Invoice</h2>
+                <div class="chart-wrapper" style="height: 300px;">
+                    <canvas id="avgRevenueChart"></canvas>
+                </div>
+            </div>
+        </div>
         </div>
 
         <!-- AI Suggestions Panel -->
@@ -981,6 +1032,9 @@
             
             // Update chart with main data and comparisons
             updateChartWithComparisons(mainData, comparisonDatasets);
+            
+            // Update all analytics charts
+            updateAnalyticsCharts(mainData);
         }
 
         function updateDisplayForPeriod(period) {
