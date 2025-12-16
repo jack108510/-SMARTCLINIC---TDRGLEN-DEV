@@ -477,11 +477,65 @@
 
         <div class="chart-container">
             <h2>📈 Invoices by Date</h2>
-            <div class="period-filters">
-                <button class="period-btn" data-period="week" onclick="filterByPeriod('week')">Last Week</button>
-                <button class="period-btn" data-period="month" onclick="filterByPeriod('month')">Last Month</button>
-                <button class="period-btn active" data-period="year" onclick="filterByPeriod('year')">Last Year</button>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333; font-size: 1.1em;">📅 View Period</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="viewPeriod" value="today" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Today</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="viewPeriod" value="week" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>This Week</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="viewPeriod" value="month" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>This Month</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="viewPeriod" value="year" onchange="updateComparison()" checked style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>This Year</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333; font-size: 1.1em;">📊 Compare To (Multiple selections allowed)</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="comparison" value="sameDayLastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Same Day Last Year</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="comparison" value="sameWeekLastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Same Week Last Year</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="comparison" value="sameMonthLastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Same Month Last Year</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="comparison" value="lastYear" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Last Year</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="comparison" value="avgDay" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Average Day</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="comparison" value="avgWeek" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Average Week</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="checkbox" name="comparison" value="avgMonth" onchange="updateComparison()" style="width: 18px; height: 18px; cursor: pointer;">
+                            <span>Average Month</span>
+                        </label>
+                    </div>
+                </div>
             </div>
+            
             <div class="date-range" id="dateRange"></div>
             <div class="chart-wrapper">
                 <canvas id="invoiceChart"></canvas>
@@ -518,6 +572,7 @@
         let invoiceChart = null;
         let fullInvoiceData = null; // Store all data
         let currentPeriod = 'year'; // Default period
+        let selectedComparisons = []; // Store selected comparison options
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
@@ -648,31 +703,259 @@
             }
         }
 
+        function updateDisplayForPeriodWithComparisons(period, comparisons) {
+            if (!fullInvoiceData) return;
+            
+            // Calculate date range for selected period
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(23, 59, 59, 999);
+            
+            let startDate, endDate, periodLabel;
+            
+            switch(period) {
+                case 'today':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    endDate.setHours(23, 59, 59, 999);
+                    periodLabel = 'Today';
+                    break;
+                case 'week':
+                    // This week (Monday to today)
+                    startDate = new Date(today);
+                    const dayOfWeek = startDate.getDay();
+                    const diff = startDate.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
+                    startDate.setDate(diff);
+                    endDate = new Date(yesterday);
+                    periodLabel = 'This Week';
+                    break;
+                case 'month':
+                    // This month (first day of month to yesterday)
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    endDate = new Date(yesterday);
+                    periodLabel = 'This Month';
+                    break;
+                case 'year':
+                    // This year (January 1 to yesterday)
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    endDate = new Date(yesterday);
+                    periodLabel = 'This Year';
+                    break;
+                default:
+                    startDate = new Date(today);
+                    startDate.setDate(startDate.getDate() - 364);
+                    endDate = new Date(yesterday);
+                    periodLabel = 'Last Year';
+            }
+            
+            // Filter main period data
+            const mainData = fullInvoiceData.dailyData.filter(item => {
+                return item.date >= startDate && item.date <= endDate;
+            });
+            
+            // Calculate comparison datasets
+            const comparisonDatasets = [];
+            const colors = ['#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
+            let colorIndex = 0;
+            
+            comparisons.forEach(comparison => {
+                let compData = [];
+                let compLabel = '';
+                
+                switch(comparison) {
+                    case 'sameDayLastYear':
+                        if (period === 'today') {
+                            const lastYearDate = new Date(today);
+                            lastYearDate.setFullYear(lastYearDate.getFullYear() - 1);
+                            compData = fullInvoiceData.dailyData.filter(item => {
+                                const itemDate = new Date(item.date);
+                                return itemDate.getFullYear() === lastYearDate.getFullYear() &&
+                                       itemDate.getMonth() === lastYearDate.getMonth() &&
+                                       itemDate.getDate() === lastYearDate.getDate();
+                            });
+                            compLabel = 'Same Day Last Year';
+                        }
+                        break;
+                    case 'sameWeekLastYear':
+                        if (period === 'week') {
+                            const lastYearStart = new Date(startDate);
+                            lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
+                            const lastYearEnd = new Date(endDate);
+                            lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
+                            compData = fullInvoiceData.dailyData.filter(item => {
+                                const itemDate = new Date(item.date);
+                                return itemDate >= lastYearStart && itemDate <= lastYearEnd;
+                            });
+                            compLabel = 'Same Week Last Year';
+                        }
+                        break;
+                    case 'sameMonthLastYear':
+                        if (period === 'month') {
+                            const lastYearStart = new Date(startDate);
+                            lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
+                            const lastYearEnd = new Date(endDate);
+                            lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
+                            compData = fullInvoiceData.dailyData.filter(item => {
+                                const itemDate = new Date(item.date);
+                                return itemDate >= lastYearStart && itemDate <= lastYearEnd;
+                            });
+                            compLabel = 'Same Month Last Year';
+                        }
+                        break;
+                    case 'lastYear':
+                        const lastYearStart = new Date(startDate);
+                        lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
+                        const lastYearEnd = new Date(endDate);
+                        lastYearEnd.setFullYear(lastYearEnd.getFullYear() - 1);
+                        compData = fullInvoiceData.dailyData.filter(item => {
+                            const itemDate = new Date(item.date);
+                            return itemDate >= lastYearStart && itemDate <= lastYearEnd;
+                        });
+                        compLabel = 'Last Year';
+                        break;
+                    case 'avgDay':
+                        // Calculate average per day across all data
+                        const allDays = fullInvoiceData.dailyData.filter(item => item.date.getDay() !== 0);
+                        const avgDayInvoices = allDays.length > 0 
+                            ? allDays.reduce((sum, item) => sum + item.count, 0) / allDays.length 
+                            : 0;
+                        const avgDayRevenue = allDays.length > 0 && allDays.some(d => d.revenue)
+                            ? allDays.reduce((sum, item) => sum + (item.revenue || 0), 0) / allDays.length
+                            : 0;
+                        // Create constant line for average
+                        compData = mainData.map(item => ({
+                            date: item.date,
+                            count: avgDayInvoices,
+                            revenue: avgDayRevenue
+                        }));
+                        compLabel = 'Average Day';
+                        break;
+                    case 'avgWeek':
+                        // Calculate average per week
+                        const weeks = [];
+                        for (let d = new Date(fullInvoiceData.dailyData[0].date); d <= new Date(fullInvoiceData.dailyData[fullInvoiceData.dailyData.length - 1].date); d.setDate(d.getDate() + 7)) {
+                            const weekEnd = new Date(d);
+                            weekEnd.setDate(weekEnd.getDate() + 6);
+                            const weekData = fullInvoiceData.dailyData.filter(item => {
+                                return item.date >= d && item.date <= weekEnd;
+                            });
+                            if (weekData.length > 0) {
+                                weeks.push({
+                                    invoices: weekData.reduce((sum, item) => sum + item.count, 0),
+                                    revenue: weekData.reduce((sum, item) => sum + (item.revenue || 0), 0)
+                                });
+                            }
+                        }
+                        const avgWeekInvoices = weeks.length > 0 ? weeks.reduce((sum, w) => sum + w.invoices, 0) / weeks.length : 0;
+                        const avgWeekRevenue = weeks.length > 0 ? weeks.reduce((sum, w) => sum + w.revenue, 0) / weeks.length : 0;
+                        compData = mainData.map(item => ({
+                            date: item.date,
+                            count: avgWeekInvoices / 7, // Daily average for week
+                            revenue: avgWeekRevenue / 7
+                        }));
+                        compLabel = 'Average Week (Daily)';
+                        break;
+                    case 'avgMonth':
+                        // Calculate average per month
+                        const months = [];
+                        const monthMap = new Map();
+                        fullInvoiceData.dailyData.forEach(item => {
+                            const monthKey = `${item.date.getFullYear()}-${item.date.getMonth()}`;
+                            if (!monthMap.has(monthKey)) {
+                                monthMap.set(monthKey, { invoices: 0, revenue: 0, days: 0 });
+                            }
+                            const monthData = monthMap.get(monthKey);
+                            monthData.invoices += item.count;
+                            monthData.revenue += (item.revenue || 0);
+                            if (item.date.getDay() !== 0) monthData.days++;
+                        });
+                        monthMap.forEach((data, key) => {
+                            if (data.days > 0) {
+                                months.push({
+                                    invoices: data.invoices / data.days,
+                                    revenue: data.revenue / data.days
+                                });
+                            }
+                        });
+                        const avgMonthInvoices = months.length > 0 ? months.reduce((sum, m) => sum + m.invoices, 0) / months.length : 0;
+                        const avgMonthRevenue = months.length > 0 ? months.reduce((sum, m) => sum + m.revenue, 0) / months.length : 0;
+                        compData = mainData.map(item => ({
+                            date: item.date,
+                            count: avgMonthInvoices,
+                            revenue: avgMonthRevenue
+                        }));
+                        compLabel = 'Average Month (Daily)';
+                        break;
+                }
+                
+                if (compData.length > 0) {
+                    comparisonDatasets.push({
+                        label: compLabel,
+                        data: compData,
+                        color: colors[colorIndex % colors.length]
+                    });
+                    colorIndex++;
+                }
+            });
+            
+            // Calculate statistics for main period
+            const totalInvoices = mainData.reduce((sum, item) => sum + item.count, 0);
+            const totalRevenue = mainData.reduce((sum, item) => sum + (item.revenue || 0), 0);
+            
+            // Count days excluding Sundays
+            const daysExcludingSundays = mainData.filter(item => item.date.getDay() !== 0).length;
+            const weekdayData = mainData.filter(item => {
+                const dayOfWeek = item.date.getDay();
+                return dayOfWeek >= 1 && dayOfWeek <= 5;
+            });
+            const saturdayData = mainData.filter(item => item.date.getDay() === 6);
+            
+            const weekdayInvoices = weekdayData.reduce((sum, item) => sum + item.count, 0);
+            const saturdayInvoices = saturdayData.reduce((sum, item) => sum + item.count, 0);
+            const weekdayDays = weekdayData.length;
+            const saturdayDays = saturdayData.length;
+            
+            const avgPerDay = daysExcludingSundays > 0 ? totalInvoices / daysExcludingSundays : 0;
+            const avgPerWeekday = weekdayDays > 0 ? weekdayInvoices / weekdayDays : 0;
+            const avgPerSaturday = saturdayDays > 0 ? saturdayInvoices / saturdayDays : 0;
+            
+            // Update statistics cards
+            updateStat('totalInvoices', totalInvoices.toLocaleString());
+            if (totalRevenue > 0) {
+                updateStat('totalRevenue', '$' + totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            } else {
+                updateStat('totalRevenue', '-');
+            }
+            updateStat('avgPerDay', avgPerDay.toFixed(2));
+            updateStat('avgPerWeekday', avgPerWeekday.toFixed(2));
+            updateStat('avgPerSaturday', avgPerSaturday.toFixed(2));
+            
+            // Update labels
+            const totalInvoicesLabel = document.getElementById('totalInvoicesLabel');
+            const totalRevenueLabel = document.getElementById('totalRevenueLabel');
+            if (totalInvoicesLabel) {
+                totalInvoicesLabel.textContent = `Invoices in ${periodLabel.toLowerCase()}`;
+            }
+            if (totalRevenueLabel) {
+                totalRevenueLabel.textContent = `Revenue in ${periodLabel.toLowerCase()}`;
+            }
+            
+            // Update date range display
+            const dateRangeEl = document.getElementById('dateRange');
+            dateRangeEl.textContent = `${periodLabel}: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`;
+            
+            // Update chart with main data and comparisons
+            updateChartWithComparisons(mainData, comparisonDatasets);
+        }
+
         function updateDisplayForPeriod(period) {
             if (!fullInvoiceData) return;
             
-            // Calculate date range for selected period (ending yesterday)
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() - 1); // Yesterday
-            endDate.setHours(23, 59, 59, 999);
-            const startDate = new Date(endDate);
-            
-            let periodLabel = '';
-            switch(period) {
-                case 'week':
-                    startDate.setDate(startDate.getDate() - 6); // Last 7 days
-                    periodLabel = 'Last 7 Days';
-                    break;
-                case 'month':
-                    startDate.setMonth(startDate.getMonth() - 1); // Last month
-                    periodLabel = 'Last Month';
-                    break;
-                case 'year':
-                    startDate.setDate(startDate.getDate() - 364); // Last 365 days
-                    periodLabel = 'Last Year';
-                    break;
-            }
-            startDate.setHours(0, 0, 0, 0);
+            // Use the new comparison function with no comparisons
+            updateDisplayForPeriodWithComparisons(period, []);
+        }
             
             // Filter daily data
             const filteredData = fullInvoiceData.dailyData.filter(item => {
@@ -1046,7 +1329,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: hasRevenue,
+                            display: true,
                             position: 'top'
                         },
                         tooltip: {
