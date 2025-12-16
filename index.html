@@ -989,15 +989,26 @@
                 }
                 
                 // Process staff data
+                console.log('Calling processStaffData with staff webhook data...');
                 processStaffData(data);
+                console.log('processStaffData completed. staffData:', staffData);
                 
                 // Update staff KPIs and charts
                 if (staffData && staffData.dailyData && staffData.dailyData.length > 0) {
-                    console.log('Updating staff KPIs and charts with staff webhook data...');
+                    console.log('✅ Staff data available! Updating staff KPIs and charts...');
+                    console.log('Staff data summary:', {
+                        dailyDataCount: staffData.dailyData.length,
+                        totalStaff: staffData.totalStaff,
+                        staffMembers: staffData.staffMembers
+                    });
                     updateStaffKPICards(data);
                     updateStaffCharts();
+                    console.log('✅ Staff KPIs and charts updated successfully');
                 } else {
-                    console.warn('No staff data processed from staff webhook');
+                    console.warn('❌ No staff data processed from staff webhook');
+                    console.warn('staffData:', staffData);
+                    console.warn('staffData.dailyData:', staffData?.dailyData);
+                    console.warn('staffData.dailyData.length:', staffData?.dailyData?.length);
                 }
             } catch (error) {
                 console.error('=== ERROR FETCHING STAFF DATA ===');
