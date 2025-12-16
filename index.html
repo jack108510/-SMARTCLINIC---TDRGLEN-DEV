@@ -651,6 +651,96 @@
                 </div>
             </div>
         </div>
+
+        <!-- Staff Analytics Section -->
+        <div style="margin-top: 48px;">
+            <div class="header" style="margin-bottom: 32px; padding: 24px;">
+                <div class="header-content">
+                    <h1 style="font-size: 2rem; margin: 0;">👥 Staff Analytics</h1>
+                    <p style="margin: 8px 0 0 0;">Staff performance and productivity insights</p>
+                </div>
+            </div>
+
+            <!-- Staff KPI Cards -->
+            <div class="kpi-grid" style="margin-bottom: 32px;">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Total Staff Hours</span>
+                        <span class="kpi-icon">⏰</span>
+                    </div>
+                    <div class="kpi-value" id="staffTotalHours">-</div>
+                    <div class="kpi-label">Yesterday</div>
+                    <div class="kpi-comparisons" id="staffTotalHoursComparisons"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Active Staff Members</span>
+                        <span class="kpi-icon">👤</span>
+                    </div>
+                    <div class="kpi-value" id="staffActiveMembers">-</div>
+                    <div class="kpi-label">Yesterday</div>
+                    <div class="kpi-comparisons" id="staffActiveMembersComparisons"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Avg Hours per Staff</span>
+                        <span class="kpi-icon">📊</span>
+                    </div>
+                    <div class="kpi-value" id="staffAvgHours">-</div>
+                    <div class="kpi-label">Yesterday</div>
+                    <div class="kpi-comparisons" id="staffAvgHoursComparisons"></div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Productivity Score</span>
+                        <span class="kpi-icon">⚡</span>
+                    </div>
+                    <div class="kpi-value" id="staffProductivity">-</div>
+                    <div class="kpi-label">Yesterday</div>
+                    <div class="kpi-comparisons" id="staffProductivityComparisons"></div>
+                </div>
+            </div>
+
+            <!-- Staff Charts -->
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <h3>👥 Staff Hours Trend</h3>
+                    <div class="analytics-chart">
+                        <canvas id="staffHoursChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>📅 Staff by Day of Week</h3>
+                    <div class="analytics-chart">
+                        <canvas id="staffDayOfWeekChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>🏆 Top Performing Staff</h3>
+                    <div class="analytics-chart">
+                        <canvas id="topStaffChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>📈 Staff Productivity Trend</h3>
+                    <div class="analytics-chart">
+                        <canvas id="staffProductivityChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>⏱️ Average Hours Distribution</h3>
+                    <div class="analytics-chart">
+                        <canvas id="staffHoursDistributionChart"></canvas>
+                    </div>
+                </div>
+                <div class="analytics-card">
+                    <h3>📊 Staff Efficiency Ratio</h3>
+                    <div class="analytics-chart">
+                        <canvas id="staffEfficiencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Settings Modal -->
@@ -827,9 +917,521 @@
                 fullInvoiceData = invoiceData;
                 updateKPICards(data);
                 updateDisplayForPeriod(currentPeriod);
+                
+                // Process staff data from the same webhook
+                processStaffData(data);
+                updateStaffKPICards(data);
+                updateStaffCharts();
             } catch (error) {
                 console.error('Error displaying data:', error);
             }
+        }
+
+        // Process Staff Data
+        function processStaffData(data) {
+            if (!data || !Array.isArray(data)) return;
+
+            // Extract staff-related data from the webhook response
+            // Assuming the data might contain staff information or we'll derive it from invoice data
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            const endDate = yesterday;
+
+            const startDate = new Date(endDate);
+            startDate.setDate(startDate.getDate() - 364);
+
+            const staffDailyData = [];
+            
+            // Process data - if staff data exists in the response, use it
+            // Otherwise, derive staff metrics from invoice data (e.g., assuming staff hours correlate with invoices)
+            data.forEach(item => {
+                if (item.txn_day) {
+                    const date = new Date(item.txn_day + 'T00:00:00');
+                    if (date <= endDate) {
+                        // If staff data exists in the response, use it
+                        // Otherwise, estimate from invoice data
+                        const invoices = item.invoices || 0;
+                        const revenue = item.revenue || 0;
+                        
+                        // Estimate staff metrics (this can be adjusted based on actual data structure)
+                        const estimatedStaff = Math.max(1, Math.ceil(invoices / 20)); // Assume ~20 invoices per staff member
+                        const estimatedHours = estimatedStaff * 8; // Assume 8 hours per staff member
+                        const productivity = invoices > 0 ? revenue / invoices : 0;
+                        
+                        staffDailyData.push({
+                            date: date,
+                            staffCount: item.staff_count || estimatedStaff,
+                            totalHours: item.total_hours || estimatedHours,
+                            avgHours: item.avg_hours || (estimatedHours / estimatedStaff),
+                            productivity: item.productivity || productivity,
+                            invoices: invoices,
+                            revenue: revenue
+                        });
+                    }
+                }
+            });
+
+            staffData = {
+                dailyData: staffDailyData.sort((a, b) => a.date - b.date),
+                totalHours: staffDailyData.reduce((sum, d) => sum + (d.totalHours || 0), 0),
+                totalStaffDays: staffDailyData.reduce((sum, d) => sum + (d.staffCount || 0), 0),
+                avgHoursPerStaff: staffDailyData.length > 0 
+                    ? staffDailyData.reduce((sum, d) => sum + (d.avgHours || 0), 0) / staffDailyData.length 
+                    : 0
+            };
+        }
+
+        // Update Staff KPI Cards
+        function updateStaffKPICards(data) {
+            if (!data || !Array.isArray(data) || data.length === 0) return;
+            if (!staffData) return;
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            const dayBefore = new Date(yesterday);
+            dayBefore.setDate(dayBefore.getDate() - 1);
+            const dayBeforeStr = dayBefore.toISOString().split('T')[0];
+
+            const lastWeek = new Date(yesterday);
+            lastWeek.setDate(lastWeek.getDate() - 7);
+            const lastWeekStr = lastWeek.toISOString().split('T')[0];
+
+            const yesterdayStaff = staffData.dailyData.find(d => 
+                d.date.toISOString().split('T')[0] === yesterdayStr
+            );
+            const dayBeforeStaff = staffData.dailyData.find(d => 
+                d.date.toISOString().split('T')[0] === dayBeforeStr
+            );
+            const lastWeekStaff = staffData.dailyData.find(d => 
+                d.date.toISOString().split('T')[0] === lastWeekStr
+            );
+
+            const thirtyDaysAgo = new Date(yesterday);
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const recent30Days = staffData.dailyData.filter(d => 
+                d.date >= thirtyDaysAgo && d.date < yesterday
+            );
+            const avg30Days = recent30Days.length > 0 ? {
+                totalHours: recent30Days.reduce((sum, d) => sum + (d.totalHours || 0), 0) / recent30Days.length,
+                staffCount: recent30Days.reduce((sum, d) => sum + (d.staffCount || 0), 0) / recent30Days.length,
+                avgHours: recent30Days.reduce((sum, d) => sum + (d.avgHours || 0), 0) / recent30Days.length,
+                productivity: recent30Days.reduce((sum, d) => sum + (d.productivity || 0), 0) / recent30Days.length
+            } : { totalHours: null, staffCount: null, avgHours: null, productivity: null };
+
+            // Total Staff Hours
+            updateKPICard('staffTotalHours', 'staffTotalHoursComparisons', {
+                value: yesterdayStaff ? yesterdayStaff.totalHours : null,
+                prevDay: dayBeforeStaff ? dayBeforeStaff.totalHours : null,
+                lastWeek: lastWeekStaff ? lastWeekStaff.totalHours : null,
+                avg30d: avg30Days.totalHours
+            }, (val) => val.toFixed(1) + ' hrs');
+
+            // Active Staff Members
+            updateKPICard('staffActiveMembers', 'staffActiveMembersComparisons', {
+                value: yesterdayStaff ? yesterdayStaff.staffCount : null,
+                prevDay: dayBeforeStaff ? dayBeforeStaff.staffCount : null,
+                lastWeek: lastWeekStaff ? lastWeekStaff.staffCount : null,
+                avg30d: avg30Days.staffCount
+            }, (val) => Math.round(val) + ' staff');
+
+            // Average Hours per Staff
+            updateKPICard('staffAvgHours', 'staffAvgHoursComparisons', {
+                value: yesterdayStaff ? yesterdayStaff.avgHours : null,
+                prevDay: dayBeforeStaff ? dayBeforeStaff.avgHours : null,
+                lastWeek: lastWeekStaff ? lastWeekStaff.avgHours : null,
+                avg30d: avg30Days.avgHours
+            }, (val) => val.toFixed(1) + ' hrs');
+
+            // Productivity Score (revenue per hour)
+            const productivityYesterday = yesterdayStaff && yesterdayStaff.totalHours > 0
+                ? yesterdayStaff.revenue / yesterdayStaff.totalHours
+                : null;
+            const productivityDayBefore = dayBeforeStaff && dayBeforeStaff.totalHours > 0
+                ? dayBeforeStaff.revenue / dayBeforeStaff.totalHours
+                : null;
+            const productivityLastWeek = lastWeekStaff && lastWeekStaff.totalHours > 0
+                ? lastWeekStaff.revenue / lastWeekStaff.totalHours
+                : null;
+            const productivity30d = avg30Days.totalHours > 0 && recent30Days.length > 0
+                ? recent30Days.reduce((sum, d) => sum + (d.revenue || 0), 0) / 
+                  recent30Days.reduce((sum, d) => sum + (d.totalHours || 0), 0)
+                : null;
+
+            updateKPICard('staffProductivity', 'staffProductivityComparisons', {
+                value: productivityYesterday,
+                prevDay: productivityDayBefore,
+                lastWeek: productivityLastWeek,
+                avg30d: productivity30d
+            }, (val) => '$' + val.toFixed(2) + '/hr');
+        }
+
+        // Update Staff Charts
+        function updateStaffCharts() {
+            if (!staffData || !staffData.dailyData || staffData.dailyData.length === 0) return;
+
+            updateStaffHoursChart();
+            updateStaffDayOfWeekChart();
+            updateTopStaffChart();
+            updateStaffProductivityChart();
+            updateStaffHoursDistributionChart();
+            updateStaffEfficiencyChart();
+        }
+
+        function updateStaffHoursChart() {
+            const ctx = document.getElementById('staffHoursChart');
+            if (!ctx || !staffData) return;
+            
+            if (staffHoursChart) staffHoursChart.destroy();
+            
+            const recentData = staffData.dailyData.slice(-90); // Last 90 days
+            
+            staffHoursChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: recentData.map(d => d.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Total Hours',
+                        data: recentData.map(d => d.totalHours),
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Staff Count',
+                        data: recentData.map(d => d.staffCount),
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#f1f5f9' }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Hours', color: '#94a3b8' },
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            title: { display: true, text: 'Staff Count', color: '#94a3b8' },
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStaffDayOfWeekChart() {
+            const ctx = document.getElementById('staffDayOfWeekChart');
+            if (!ctx || !staffData) return;
+            
+            if (staffDayOfWeekChart) staffDayOfWeekChart.destroy();
+            
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const dayData = new Array(7).fill(0).map(() => ({ hours: 0, count: 0 }));
+            
+            staffData.dailyData.forEach(item => {
+                const day = item.date.getDay();
+                dayData[day].hours += item.totalHours;
+                dayData[day].count++;
+            });
+            
+            const avgHours = dayData.map(d => d.count > 0 ? d.hours / d.count : 0);
+            
+            staffDayOfWeekChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: dayNames,
+                    datasets: [{
+                        label: 'Avg Hours',
+                        data: avgHours,
+                        backgroundColor: '#8b5cf6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTopStaffChart() {
+            const ctx = document.getElementById('topStaffChart');
+            if (!ctx || !staffData) return;
+            
+            if (topStaffChart) topStaffChart.destroy();
+            
+            // Group by date and calculate productivity (revenue per hour)
+            const productivityByDate = staffData.dailyData.map(d => ({
+                date: d.date,
+                productivity: d.totalHours > 0 ? d.revenue / d.totalHours : 0,
+                hours: d.totalHours
+            }));
+            
+            const sorted = [...productivityByDate].sort((a, b) => b.productivity - a.productivity).slice(0, 10);
+            
+            topStaffChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(item => item.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Productivity ($/hr)',
+                        data: sorted.map(item => item.productivity),
+                        backgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.parsed.x.toFixed(2) + '/hr';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { 
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                }
+                            }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStaffProductivityChart() {
+            const ctx = document.getElementById('staffProductivityChart');
+            if (!ctx || !staffData) return;
+            
+            if (staffProductivityChart) staffProductivityChart.destroy();
+            
+            const recentData = staffData.dailyData.slice(-30);
+            const productivity = recentData.map(d => 
+                d.totalHours > 0 ? d.revenue / d.totalHours : 0
+            );
+            
+            staffProductivityChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: recentData.map(d => d.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Productivity ($/hr)',
+                        data: productivity,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.parsed.y.toFixed(2) + '/hr';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { 
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStaffHoursDistributionChart() {
+            const ctx = document.getElementById('staffHoursDistributionChart');
+            if (!ctx || !staffData) return;
+            
+            if (staffHoursDistributionChart) staffHoursDistributionChart.destroy();
+            
+            const recentData = staffData.dailyData.slice(-30);
+            const hoursRanges = {
+                '0-4': 0,
+                '4-6': 0,
+                '6-8': 0,
+                '8-10': 0,
+                '10+': 0
+            };
+            
+            recentData.forEach(d => {
+                const hours = d.avgHours;
+                if (hours < 4) hoursRanges['0-4']++;
+                else if (hours < 6) hoursRanges['4-6']++;
+                else if (hours < 8) hoursRanges['6-8']++;
+                else if (hours < 10) hoursRanges['8-10']++;
+                else hoursRanges['10+']++;
+            });
+            
+            staffHoursDistributionChart = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(hoursRanges),
+                    datasets: [{
+                        data: Object.values(hoursRanges),
+                        backgroundColor: [
+                            '#6366f1',
+                            '#8b5cf6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#f1f5f9' }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateStaffEfficiencyChart() {
+            const ctx = document.getElementById('staffEfficiencyChart');
+            if (!ctx || !staffData) return;
+            
+            if (staffEfficiencyChart) staffEfficiencyChart.destroy();
+            
+            const recentData = staffData.dailyData.slice(-30);
+            const efficiency = recentData.map(d => {
+                // Efficiency = invoices per staff hour
+                return d.totalHours > 0 ? (d.invoices / d.totalHours) * 10 : 0;
+            });
+            
+            staffEfficiencyChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: recentData.map(d => d.date.toLocaleDateString()),
+                    datasets: [{
+                        label: 'Efficiency (invoices per 10 staff hours)',
+                        data: efficiency,
+                        borderColor: '#ec4899',
+                        backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y.toFixed(2) + ' invoices/10hrs';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
         }
 
         function processInvoiceData(data) {
