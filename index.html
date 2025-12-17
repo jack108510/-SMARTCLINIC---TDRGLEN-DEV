@@ -649,163 +649,167 @@
 
         <!-- Charts Page -->
         <div id="chartsPage" class="page">
-            <!-- Main Charts Section -->
-            <div class="charts-section">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h2 class="chart-title">📈 Revenue & Invoices Trend</h2>
+            <!-- Financial Analytics Section -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h2 class="section-title">💰 Financial Analytics</h2>
+                    <p class="section-subtitle">Revenue, invoices, and transaction insights</p>
                 </div>
-                <div class="chart-controls">
-                    <div class="control-group">
-                        <label class="control-label">View Period</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="viewPeriod" value="today" onchange="updateComparison()">
-                                <span>Today</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="viewPeriod" value="week" onchange="updateComparison()">
-                                <span>This Week</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="viewPeriod" value="month" onchange="updateComparison()">
-                                <span>This Month</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="viewPeriod" value="year" onchange="updateComparison()" checked>
-                                <span>This Year</span>
-                            </label>
+
+                <!-- Main Revenue & Invoices Trend Chart -->
+                <div class="chart-card" style="margin-bottom: 32px;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">📈 Revenue & Invoices Trend</h3>
+                    </div>
+                    <div class="chart-controls">
+                        <div class="control-group">
+                            <label class="control-label">View Period</label>
+                            <div class="radio-group">
+                                <label class="radio-option">
+                                    <input type="radio" name="viewPeriod" value="today" onchange="updateComparison()">
+                                    <span>Today</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="viewPeriod" value="week" onchange="updateComparison()">
+                                    <span>This Week</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="viewPeriod" value="month" onchange="updateComparison()">
+                                    <span>This Month</span>
+                                </label>
+                                <label class="radio-option">
+                                    <input type="radio" name="viewPeriod" value="year" onchange="updateComparison()" checked>
+                                    <span>This Year</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Compare To</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="comparison" value="sameDayLastYear" onchange="updateComparison()">
+                                    <span>Same Day Last Year</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="comparison" value="sameWeekLastYear" onchange="updateComparison()">
+                                    <span>Same Week Last Year</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="comparison" value="sameMonthLastYear" onchange="updateComparison()">
+                                    <span>Same Month Last Year</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="comparison" value="lastYear" onchange="updateComparison()">
+                                    <span>Last Year</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="comparison" value="avgDay" onchange="updateComparison()">
+                                    <span>Average Day</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="comparison" value="avgWeek" onchange="updateComparison()">
+                                    <span>Average Week</span>
+                                </label>
+                                <label class="checkbox-option">
+                                    <input type="checkbox" name="comparison" value="avgMonth" onchange="updateComparison()">
+                                    <span>Average Month</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    <div class="control-group">
-                        <label class="control-label">Compare To</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="sameDayLastYear" onchange="updateComparison()">
-                                <span>Same Day Last Year</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="sameWeekLastYear" onchange="updateComparison()">
-                                <span>Same Week Last Year</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="sameMonthLastYear" onchange="updateComparison()">
-                                <span>Same Month Last Year</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="lastYear" onchange="updateComparison()">
-                                <span>Last Year</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="avgDay" onchange="updateComparison()">
-                                <span>Average Day</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="avgWeek" onchange="updateComparison()">
-                                <span>Average Week</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="avgMonth" onchange="updateComparison()">
-                                <span>Average Month</span>
-                            </label>
+                    <div class="chart-wrapper">
+                        <canvas id="invoiceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Financial Analytics Grid -->
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>📅 Day of Week Analysis</h3>
+                        <div class="analytics-chart">
+                            <canvas id="dayOfWeekChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>📆 Monthly Trends</h3>
+                        <div class="analytics-chart">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>💰 Revenue vs Invoices</h3>
+                        <div class="analytics-chart">
+                            <canvas id="revenueVsInvoicesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>📈 Growth Rate</h3>
+                        <div class="analytics-chart">
+                            <canvas id="growthRateChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>🏆 Top 10 Invoice Days</h3>
+                        <div class="analytics-chart">
+                            <canvas id="topDaysChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>💲 Avg Revenue per Invoice</h3>
+                        <div class="analytics-chart">
+                            <canvas id="avgRevenuePerInvoiceChart"></canvas>
                         </div>
                     </div>
                 </div>
-                <div class="chart-wrapper">
-                    <canvas id="invoiceChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-            <!-- Financial Analytics Charts -->
-            <div class="analytics-grid">
-                <div class="analytics-card">
-                    <h3>📅 Day of Week Analysis</h3>
-                    <div class="analytics-chart">
-                        <canvas id="dayOfWeekChart"></canvas>
-                    </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>📆 Monthly Trends</h3>
-                    <div class="analytics-chart">
-                        <canvas id="monthlyChart"></canvas>
-                    </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>💰 Revenue vs Invoices</h3>
-                    <div class="analytics-chart">
-                        <canvas id="revenueVsInvoicesChart"></canvas>
-                    </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>📈 Growth Rate</h3>
-                    <div class="analytics-chart">
-                        <canvas id="growthRateChart"></canvas>
-                    </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>🏆 Top 10 Invoice Days</h3>
-                    <div class="analytics-chart">
-                        <canvas id="topDaysChart"></canvas>
-                    </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>💲 Avg Revenue per Invoice</h3>
-                    <div class="analytics-chart">
-                        <canvas id="avgRevenuePerInvoiceChart"></canvas>
-                    </div>
-                </div>
             </div>
 
-            <!-- Staff Analytics Charts Section -->
-            <div style="margin-top: 48px;">
-                <div class="header" style="margin-bottom: 32px; padding: 24px;">
-                    <div class="header-content">
-                        <h1 style="font-size: 2rem; margin: 0;">👥 Staff Analytics Charts</h1>
-                        <p style="margin: 8px 0 0 0;">Staff performance and productivity visualizations</p>
-                    </div>
+            <!-- Staff Analytics Section -->
+            <div class="section-container" style="margin-top: 48px;">
+                <div class="section-header">
+                    <h2 class="section-title">👥 Staff Analytics</h2>
+                    <p class="section-subtitle">Staff performance, productivity, and efficiency metrics</p>
                 </div>
 
-                <!-- Staff Charts -->
-            <div class="analytics-grid">
-                <div class="analytics-card">
-                    <h3>👥 Staff Hours Trend</h3>
-                    <div class="analytics-chart">
-                        <canvas id="staffHoursChart"></canvas>
+                <!-- Staff Charts Grid -->
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h3>👥 Staff Hours Trend</h3>
+                        <div class="analytics-chart">
+                            <canvas id="staffHoursChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>📅 Staff by Day of Week</h3>
-                    <div class="analytics-chart">
-                        <canvas id="staffDayOfWeekChart"></canvas>
+                    <div class="analytics-card">
+                        <h3>📅 Staff by Day of Week</h3>
+                        <div class="analytics-chart">
+                            <canvas id="staffDayOfWeekChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>🏆 Top Performing Staff</h3>
-                    <div class="analytics-chart">
-                        <canvas id="topStaffChart"></canvas>
+                    <div class="analytics-card">
+                        <h3>🏆 Top Performing Staff</h3>
+                        <div class="analytics-chart">
+                            <canvas id="topStaffChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>📈 Staff Productivity Trend</h3>
-                    <div class="analytics-chart">
-                        <canvas id="staffProductivityChart"></canvas>
+                    <div class="analytics-card">
+                        <h3>📈 Staff Productivity Trend</h3>
+                        <div class="analytics-chart">
+                            <canvas id="staffProductivityChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>⏱️ Average Hours Distribution</h3>
-                    <div class="analytics-chart">
-                        <canvas id="staffHoursDistributionChart"></canvas>
+                    <div class="analytics-card">
+                        <h3>⏱️ Average Hours Distribution</h3>
+                        <div class="analytics-chart">
+                            <canvas id="staffHoursDistributionChart"></canvas>
+                        </div>
                     </div>
-                </div>
-                <div class="analytics-card">
-                    <h3>📊 Staff Efficiency Ratio</h3>
-                    <div class="analytics-chart">
-                        <canvas id="staffEfficiencyChart"></canvas>
+                    <div class="analytics-card">
+                        <h3>📊 Staff Efficiency Ratio</h3>
+                        <div class="analytics-chart">
+                            <canvas id="staffEfficiencyChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
         </div>
 
         <!-- Tools Page -->
