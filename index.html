@@ -1193,7 +1193,9 @@
                     staffData: staffData
                 };
 
-                console.log('Sending AI query:', query);
+                console.log('=== SENDING AI QUERY ===');
+                console.log('Webhook URL:', aiWebhookUrl);
+                console.log('Query:', query);
                 console.log('Request data:', requestData);
 
                 const response = await fetch(aiWebhookUrl, {
@@ -1205,11 +1207,17 @@
                     body: JSON.stringify(requestData)
                 });
 
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('=== AI RESPONSE RECEIVED ===');
                 console.log('AI response:', data);
 
                 // Remove loading message
