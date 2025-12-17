@@ -438,15 +438,14 @@
         
         // Detect if running from file:// or http://
         const isFileProtocol = window.location.protocol === 'file:';
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
         
-        // Use direct webhook URLs for GitHub Pages and file protocol, proxy for local server
-        const invoiceDataWebhookUrl = isLocalhost
-            ? '/proxy/invoice'
-            : 'https://jackwilde.app.n8n.cloud/webhook/60e42850-6593-4d18-a4c7-c38293d1d768';
-        const aiWebhookUrl = isLocalhost
-            ? '/proxy/ai'
-            : 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a772-48c2040cfc83';
+        // Use proxy endpoints if running on server, otherwise use direct URLs (will need CORS proxy)
+        const invoiceDataWebhookUrl = isFileProtocol 
+            ? 'https://jackwilde.app.n8n.cloud/webhook/60e42850-6593-4d18-a4c7-c38293d1d768'
+            : '/proxy/invoice';
+        const aiWebhookUrl = isFileProtocol
+            ? 'https://jackwilde.app.n8n.cloud/webhook/dfd8f0c4-c739-4c8b-a772-48c2040cfc83'
+            : '/proxy/ai';
             
         let invoiceChart = null;
         let fullInvoiceData = null; // Store all data
