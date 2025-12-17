@@ -599,8 +599,8 @@
                     <span id="connectionText">Connecting...</span>
                 </div>
                 <button class="btn btn-primary" onclick="openSettings()">⚙️ Settings</button>
+                </div>
             </div>
-        </div>
 
         <!-- Navigation Tabs -->
         <div class="nav-tabs">
@@ -617,11 +617,11 @@
                 <div class="kpi-header">
                     <span class="kpi-title">Total Revenue</span>
                     <span class="kpi-icon">💰</span>
-                </div>
+                    </div>
                 <div class="kpi-value" id="kpiRevenue">-</div>
                 <div class="kpi-label">Yesterday</div>
                 <div class="kpi-comparisons" id="kpiRevenueComparisons"></div>
-            </div>
+                </div>
             <div class="kpi-card">
                 <div class="kpi-header">
                     <span class="kpi-title">Number of Invoices</span>
@@ -657,7 +657,7 @@
                 <div class="header-content">
                     <h1 style="font-size: 2rem; margin: 0;">👥 Staff Analytics</h1>
                     <p style="margin: 8px 0 0 0;">Staff performance and productivity insights</p>
-                </div>
+            </div>
             </div>
 
             <!-- Staff KPI Cards -->
@@ -666,13 +666,13 @@
                     <div class="kpi-header">
                         <span class="kpi-title">Active Staff Members</span>
                         <span class="kpi-icon">👤</span>
-                    </div>
+            </div>
                 <div class="kpi-value" id="staffActiveMembers">-</div>
                 <div class="kpi-label">Current Month</div>
                     <div class="kpi-comparisons" id="staffActiveMembersComparisons"></div>
-                </div>
             </div>
-        </div>
+            </div>
+            </div>
         </div>
 
         <!-- Charts Page -->
@@ -680,121 +680,62 @@
             <!-- Financial Analytics Section -->
             <div class="section-container">
                 <div class="section-header">
-                    <h2 class="section-title">💰 Financial Analytics</h2>
+                    <h2 class="section-title">Financial Analytics</h2>
                     <p class="section-subtitle">Revenue, invoices, and transaction insights</p>
-                </div>
-
-                <!-- Main Revenue & Invoices Trend Chart -->
-                <div class="chart-card" style="margin-bottom: 32px;">
-                    <div class="chart-header">
-                        <h3 class="chart-title">📈 Revenue & Invoices Trend</h3>
-                    </div>
-                    <div class="chart-controls">
-                        <div class="control-group">
-                            <label class="control-label">View Period</label>
-                        <div class="radio-group">
-                            <label class="radio-option">
-                                <input type="radio" name="viewPeriod" value="week" onchange="updateComparison()">
-                                <span>This Week</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="viewPeriod" value="month" onchange="updateComparison()">
-                                <span>This Month</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="viewPeriod" value="year" onchange="updateComparison()" checked>
-                                <span>This Year</span>
-                            </label>
-                        </div>
-                        </div>
-                        <div class="control-group">
-                            <label class="control-label">Compare To</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="lastYear" onchange="updateComparison()">
-                                <span>Last Year</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="avgDay" onchange="updateComparison()">
-                                <span>Average Day</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="avgWeek" onchange="updateComparison()">
-                                <span>Average Week</span>
-                            </label>
-                            <label class="checkbox-option">
-                                <input type="checkbox" name="comparison" value="avgMonth" onchange="updateComparison()">
-                                <span>Average Month</span>
-                            </label>
-                        </div>
-                        </div>
-                    </div>
-                    <div class="chart-wrapper">
-                        <canvas id="invoiceChart"></canvas>
-                    </div>
-                </div>
-
-                <!-- Financial Analytics Grid -->
-                <div class="analytics-grid">
-                    <div class="analytics-card">
-                        <h3>📅 Day of Week Analysis</h3>
-                        <div class="analytics-chart">
-                            <canvas id="dayOfWeekChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>📆 Monthly Trends</h3>
-                        <div class="analytics-chart">
-                            <canvas id="monthlyChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>💰 Revenue vs Invoices</h3>
-                        <div class="analytics-chart">
-                            <canvas id="revenueVsInvoicesChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>📈 Growth Rate</h3>
-                        <div class="analytics-chart">
-                            <canvas id="growthRateChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>🏆 Top 10 Invoice Days</h3>
-                        <div class="analytics-chart">
-                            <canvas id="topDaysChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>💲 Avg Revenue per Invoice</h3>
-                        <div class="analytics-chart">
-                            <canvas id="avgRevenuePerInvoiceChart"></canvas>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Staff Analytics Section -->
-            <div class="section-container" style="margin-top: 48px;">
-                <div class="section-header">
-                    <h2 class="section-title">👥 Staff Analytics</h2>
-                    <p class="section-subtitle">Staff performance, productivity, and efficiency metrics</p>
+                <!-- 1. Revenue Trend (REQUIRED) -->
+                <div class="chart-card" style="margin-bottom: 32px;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Revenue Trend</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 8px 0 0 0;">Last 30 completed days - with 30-day rolling average</p>
+                    </div>
+            <div class="chart-wrapper">
+                        <canvas id="revenueTrendChart"></canvas>
+            </div>
+        </div>
+
+                <!-- 2. Invoice Volume Trend (REQUIRED) -->
+                <div class="chart-card" style="margin-bottom: 32px;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Invoice Volume Trend</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 8px 0 0 0;">Last 30 completed days</p>
+                </div>
+                    <div class="chart-wrapper">
+                        <canvas id="invoiceVolumeChart"></canvas>
+            </div>
                 </div>
 
-                <!-- Staff Charts Grid -->
-                <div class="analytics-grid">
-                    <div class="analytics-card">
-                        <h3>🏆 Top Performing Staff</h3>
-                        <div class="analytics-chart">
-                            <canvas id="topStaffChart"></canvas>
-                        </div>
+                <!-- 3. Average Invoice Value Trend (RECOMMENDED) -->
+                <div class="chart-card" style="margin-bottom: 32px;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Average Invoice Value Trend</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 8px 0 0 0;">Last 30 completed days</p>
                     </div>
-                    <div class="analytics-card">
-                        <h3>📈 Staff Productivity Trend</h3>
-                        <div class="analytics-chart">
-                            <canvas id="staffProductivityChart"></canvas>
-                        </div>
+                    <div class="chart-wrapper">
+                        <canvas id="avgInvoiceValueChart"></canvas>
+        </div>
+    </div>
+
+                <!-- 4. Staff Revenue Distribution (OPTIONAL) -->
+                <div class="chart-card" style="margin-bottom: 32px;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Staff Revenue Distribution</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 8px 0 0 0;">Last 30 days - Bottom 20% highlighted</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="staffRevenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 5. Revenue by Service (OPTIONAL) -->
+                <div class="chart-card" style="margin-bottom: 32px;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Revenue by Service</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 8px 0 0 0;">Top 10 services - Last 30 days</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="revenueByServiceChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -906,22 +847,20 @@
         const aiWebhookUrl = (isFileProtocol || isGitHubPages)
             ? (isGitHubPages ? CORS_PROXY + encodeURIComponent(AI_WEBHOOK) : AI_WEBHOOK)
             : '/proxy/ai';
-
+            
         // Global State
         let refreshIntervalId = null;
-        let invoiceChart = null;
         let fullInvoiceData = null;
         let currentPeriod = 'year';
         let selectedComparisons = [];
-        let dayOfWeekChart = null;
-        let monthlyChart = null;
-        let revenueVsInvoicesChart = null;
-        let growthRateChart = null;
-        let topDaysChart = null;
-        let avgRevenuePerInvoiceChart = null;
         let staffData = null;
-        let topStaffChart = null;
-        let staffProductivityChart = null;
+        
+        // Chart variables
+        let revenueTrendChart = null;
+        let invoiceVolumeChart = null;
+        let avgInvoiceValueChart = null;
+        let staffRevenueChart = null;
+        let revenueByServiceChart = null;
 
         // Navigation Functions
         function showPage(pageId, buttonElement) {
@@ -1040,7 +979,7 @@
             console.log('=== FETCH DATA START ===');
             console.log('Webhook URL:', invoiceDataWebhookUrl);
             updateConnectionStatus(true, 'connecting');
-            
+
             try {
                 const response = await fetch(invoiceDataWebhookUrl, {
                     method: 'GET',
@@ -1450,7 +1389,7 @@
                             revenue: staffMember.revenue
                         });
                     }
-                } else {
+            } else {
                     skippedCount++;
                     if (skippedCount <= 5) {
                         skippedItems.push({ 
@@ -1676,7 +1615,7 @@
                             staffPerformance[staffKey] = {
                                 name: staff.staff_name,
                                 totalInvoices: 0,
-                                totalRevenue: 0,
+                    totalRevenue: 0,
                                 totalLines: 0,
                                 count: 0
                             };
@@ -1964,10 +1903,10 @@
 
                         if (!isSunday) {
                             if (isWeekday) {
-                                weekdayDays++;
+                    weekdayDays++;
                                 weekdayInvoices += (item.invoices || 0);
                             } else if (isSaturday) {
-                                saturdayDays++;
+                    saturdayDays++;
                                 saturdayInvoices += (item.invoices || 0);
                             }
                         }
@@ -2289,32 +2228,531 @@
                         })),
                         borderColor: colors[colorIndex % colors.length],
                         backgroundColor: 'transparent',
-                        borderWidth: 2,
+                    borderWidth: 2,
                         borderDash: [5, 5],
-                        pointRadius: 0,
+                    pointRadius: 0,
                         tension: 0.4
                     });
                     colorIndex++;
                 }
             });
 
-            updateChartWithComparisons(mainData, comparisonDatasets, period);
-            updateDayOfWeekChart(mainData);
-            updateMonthlyTrendsChart(mainData);
-            updateRevenueVsInvoicesChart(mainData);
-            updateGrowthRateChart(mainData);
-            updateTopDaysChart(mainData);
-            updateAvgRevenuePerInvoiceChart(mainData);
+            // Update the 5 new charts
+            updateRevenueTrendChart();
+            updateInvoiceVolumeChart();
+            updateAvgInvoiceValueChart();
+            updateStaffRevenueChart();
+            updateRevenueByServiceChart();
         }
 
-        function updateChartWithComparisons(mainData, comparisonDatasets, period) {
-            // Use provided period or fall back to currentPeriod or 'year'
-            const chartPeriod = period || currentPeriod || 'year';
-            const ctx = document.getElementById('invoiceChart').getContext('2d');
+        // Chart variables
+        let revenueTrendChart = null;
+        let invoiceVolumeChart = null;
+        let avgInvoiceValueChart = null;
+        let staffRevenueChart = null;
+        let revenueByServiceChart = null;
+
+        // Helper function to get last 30 completed days
+        function getLast30DaysData() {
+            if (!fullInvoiceData || !fullInvoiceData.dailyData) return [];
             
-            if (invoiceChart) {
-                invoiceChart.destroy();
-            }
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            
+            const startDate = new Date(yesterday);
+            startDate.setDate(startDate.getDate() - 29);
+            startDate.setHours(0, 0, 0, 0);
+            
+            return fullInvoiceData.dailyData.filter(item => {
+                return item.date >= startDate && item.date <= yesterday;
+            }).sort((a, b) => a.date - b.date);
+        }
+
+        // Helper function to calculate 30-day rolling average
+        function calculateRollingAverage(data, index, windowSize = 30) {
+            const start = Math.max(0, index - windowSize + 1);
+            const window = data.slice(start, index + 1);
+            const sum = window.reduce((acc, item) => acc + (item.revenue || 0), 0);
+            return sum / window.length;
+        }
+
+        // 1. Revenue Trend Chart
+        function updateRevenueTrendChart() {
+            const ctx = document.getElementById('revenueTrendChart');
+            if (!ctx) return;
+            
+            if (revenueTrendChart) revenueTrendChart.destroy();
+            
+            const last30Days = getLast30DaysData();
+            if (last30Days.length === 0) return;
+            
+            const labels = last30Days.map(item => item.date);
+            const revenues = last30Days.map(item => item.revenue || 0);
+            const rollingAvg = last30Days.map((item, index) => calculateRollingAverage(last30Days, index));
+            
+            // Identify Saturdays
+            const saturdayIndices = last30Days
+                .map((item, index) => item.date.getDay() === 6 ? index : -1)
+                .filter(idx => idx !== -1);
+            
+            revenueTrendChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Total Revenue',
+                            data: revenues,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: saturdayIndices.length > 0 ? last30Days.map((_, idx) => saturdayIndices.includes(idx) ? 6 : 3) : 3,
+                            pointBackgroundColor: last30Days.map((_, idx) => saturdayIndices.includes(idx) ? '#f59e0b' : '#6366f1'),
+                            pointBorderColor: last30Days.map((_, idx) => saturdayIndices.includes(idx) ? '#f59e0b' : '#6366f1')
+                        },
+                        {
+                            label: '30-Day Rolling Average',
+                            data: rollingAvg,
+                            borderColor: '#94a3b8',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    if (context.datasetIndex === 0) {
+                                        return 'Revenue: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    } else {
+                                        return '30-Day Avg: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Invoice Volume Trend Chart
+        function updateInvoiceVolumeChart() {
+            const ctx = document.getElementById('invoiceVolumeChart');
+            if (!ctx) return;
+            
+            if (invoiceVolumeChart) invoiceVolumeChart.destroy();
+            
+            const last30Days = getLast30DaysData();
+            if (last30Days.length === 0) return;
+            
+            const labels = last30Days.map(item => item.date);
+            const invoiceCounts = last30Days.map(item => item.count || 0);
+            
+            invoiceVolumeChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invoice Count',
+                        data: invoiceCounts,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Invoices: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Invoice Count',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. Average Invoice Value Trend Chart
+        function updateAvgInvoiceValueChart() {
+            const ctx = document.getElementById('avgInvoiceValueChart');
+            if (!ctx) return;
+            
+            if (avgInvoiceValueChart) avgInvoiceValueChart.destroy();
+            
+            const last30Days = getLast30DaysData();
+            if (last30Days.length === 0) return;
+            
+            const labels = last30Days.map(item => item.date);
+            const avgValues = last30Days.map(item => 
+                item.count > 0 ? (item.revenue || 0) / item.count : 0
+            );
+            
+            avgInvoiceValueChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Invoice Value',
+                        data: avgValues,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Avg Invoice Value: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Average Invoice Value',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 4. Staff Revenue Distribution Chart
+        function updateStaffRevenueChart() {
+            const ctx = document.getElementById('staffRevenueChart');
+            if (!ctx || !staffData || !staffData.dailyData) return;
+            
+            if (staffRevenueChart) staffRevenueChart.destroy();
+            
+            // Get last 30 days of staff data
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            
+            const startDate = new Date(yesterday);
+            startDate.setDate(startDate.getDate() - 29);
+            startDate.setHours(0, 0, 0, 0);
+            
+            const last30DaysStaff = staffData.dailyData.filter(item => {
+                return item.date >= startDate && item.date <= yesterday;
+            });
+            
+            // Aggregate revenue by staff member
+            const staffRevenueMap = {};
+            last30DaysStaff.forEach(dayData => {
+                if (dayData.staff) {
+                    dayData.staff.forEach(staffMember => {
+                        const key = staffMember.staffid || staffMember.staff_name || 'Unknown';
+                        if (!staffRevenueMap[key]) {
+                            staffRevenueMap[key] = {
+                                name: staffMember.staff_name || staffMember.staffid || 'Unknown',
+                                revenue: 0
+                            };
+                        }
+                        staffRevenueMap[key].revenue += staffMember.revenue || 0;
+                    });
+                }
+            });
+            
+            // Convert to array and sort by revenue descending
+            const staffArray = Object.values(staffRevenueMap)
+                .sort((a, b) => b.revenue - a.revenue);
+            
+            // Calculate bottom 20% threshold
+            const bottom20PercentIndex = Math.floor(staffArray.length * 0.8);
+            
+            const labels = staffArray.map(s => s.name);
+            const revenues = staffArray.map(s => s.revenue);
+            const backgroundColors = staffArray.map((s, index) => 
+                index >= bottom20PercentIndex ? '#ef4444' : '#6366f1'
+            );
+            
+            staffRevenueChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Revenue (Last 30 Days)',
+                        data: revenues,
+                        backgroundColor: backgroundColors
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: $' + context.parsed.x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue (Last 30 Days)',
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 5. Revenue by Service Chart
+        function updateRevenueByServiceChart() {
+            const ctx = document.getElementById('revenueByServiceChart');
+            if (!ctx) return;
+            
+            if (revenueByServiceChart) revenueByServiceChart.destroy();
+            
+            // Note: Service data may not be available in current data structure
+            // This is a placeholder that will show a message if data is not available
+            // You may need to modify the data fetching to include service-level details
+            
+            const placeholderData = {
+                labels: ['Service data not available'],
+                data: [0]
+            };
+            
+            revenueByServiceChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: placeholderData.labels,
+                    datasets: [{
+                        label: 'Revenue by Service (Last 30 Days)',
+                        data: placeholderData.data,
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue (Last 30 Days)',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Old function stub (keeping for compatibility)
+        function updateChartWithComparisons(mainData, comparisonDatasets, period) {
+            // This function is no longer used but kept for compatibility
 
             const datasets = [
                 {
@@ -2428,328 +2866,511 @@
             });
         }
 
-        // Analytics Chart Functions (simplified versions)
-        function updateDayOfWeekChart(dailyData) {
-            const ctx = document.getElementById('dayOfWeekChart');
-            if (!ctx) return;
+        // Chart variables
+        let revenueTrendChart = null;
+        let invoiceVolumeChart = null;
+        let avgInvoiceValueChart = null;
+        let staffRevenueChart = null;
+        let revenueByServiceChart = null;
+
+        // Helper function to get last 30 completed days
+        function getLast30DaysData() {
+            if (!fullInvoiceData || !fullInvoiceData.dailyData) return [];
             
-            if (dayOfWeekChart) dayOfWeekChart.destroy();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
             
-            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            const dayData = new Array(7).fill(0).map(() => ({ invoices: 0, count: 0 }));
+            const startDate = new Date(yesterday);
+            startDate.setDate(startDate.getDate() - 29);
+            startDate.setHours(0, 0, 0, 0);
             
-            dailyData.forEach(item => {
-                const day = item.date.getDay();
-                dayData[day].invoices += item.count;
-                dayData[day].count++;
-            });
-            
-            const avgInvoices = dayData.map(d => d.count > 0 ? d.invoices / d.count : 0);
-            
-            dayOfWeekChart = new Chart(ctx.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: dayNames,
-                    datasets: [{
-                        label: 'Avg Invoices',
-                        data: avgInvoices,
-                        backgroundColor: '#6366f1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
+            return fullInvoiceData.dailyData.filter(item => {
+                return item.date >= startDate && item.date <= yesterday;
+            }).sort((a, b) => a.date - b.date);
         }
 
-        function updateMonthlyTrendsChart(dailyData) {
-            const ctx = document.getElementById('monthlyChart');
+        // Helper function to calculate 30-day rolling average
+        function calculateRollingAverage(data, index, windowSize = 30) {
+            const start = Math.max(0, index - windowSize + 1);
+            const window = data.slice(start, index + 1);
+            const sum = window.reduce((acc, item) => acc + (item.revenue || 0), 0);
+            return sum / window.length;
+        }
+
+        // 1. Revenue Trend Chart
+        function updateRevenueTrendChart() {
+            const ctx = document.getElementById('revenueTrendChart');
             if (!ctx) return;
             
-            if (monthlyChart) monthlyChart.destroy();
+            if (revenueTrendChart) revenueTrendChart.destroy();
             
-            const monthData = {};
-            dailyData.forEach(item => {
-                const monthKey = item.date.getFullYear() + '-' + (item.date.getMonth() + 1);
-                if (!monthData[monthKey]) {
-                    monthData[monthKey] = { invoices: 0, revenue: 0, count: 0 };
-                }
-                monthData[monthKey].invoices += item.count;
-                monthData[monthKey].revenue += item.revenue;
-                monthData[monthKey].count++;
-            });
+            const last30Days = getLast30DaysData();
+            if (last30Days.length === 0) return;
             
-            const labels = Object.keys(monthData).sort();
-            const invoices = labels.map(key => monthData[key].invoices);
+            const labels = last30Days.map(item => item.date);
+            const revenues = last30Days.map(item => item.revenue || 0);
+            const rollingAvg = last30Days.map((item, index) => calculateRollingAverage(last30Days, index));
             
-            monthlyChart = new Chart(ctx.getContext('2d'), {
+            // Identify Saturdays
+            const saturdayIndices = last30Days
+                .map((item, index) => item.date.getDay() === 6 ? index : -1)
+                .filter(idx => idx !== -1);
+            
+            revenueTrendChart = new Chart(ctx.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Invoices',
-                        data: invoices,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
+                    datasets: [
+                        {
+                            label: 'Total Revenue',
+                            data: revenues,
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: saturdayIndices.length > 0 ? last30Days.map((_, idx) => saturdayIndices.includes(idx) ? 6 : 3) : 3,
+                            pointBackgroundColor: last30Days.map((_, idx) => saturdayIndices.includes(idx) ? '#f59e0b' : '#6366f1'),
+                            pointBorderColor: last30Days.map((_, idx) => saturdayIndices.includes(idx) ? '#f59e0b' : '#6366f1')
                         },
-                        x: {
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
+                        {
+                            label: '30-Day Rolling Average',
+                            data: rollingAvg,
+                            borderColor: '#94a3b8',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 0
                         }
-                    }
-                }
-            });
-        }
-
-        function updateRevenueVsInvoicesChart(dailyData) {
-            const ctx = document.getElementById('revenueVsInvoicesChart');
-            if (!ctx) return;
-            
-            if (revenueVsInvoicesChart) revenueVsInvoicesChart.destroy();
-            
-            revenueVsInvoicesChart = new Chart(ctx.getContext('2d'), {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: 'Revenue vs Invoices',
-                        data: dailyData.map(item => ({
-                            x: item.count,
-                            y: item.revenue
-                        })),
-                        backgroundColor: '#6366f1'
-                    }]
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9'
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Invoices', color: '#94a3b8' },
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        y: {
-                            title: { display: true, text: 'Revenue ($)', color: '#94a3b8' },
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateGrowthRateChart(dailyData) {
-            const ctx = document.getElementById('growthRateChart');
-            if (!ctx) return;
-            
-            if (growthRateChart) growthRateChart.destroy();
-            
-            const growthRates = [];
-            const labels = [];
-            
-            for (let i = 1; i < dailyData.length; i++) {
-                const prev = dailyData[i - 1].count;
-                const curr = dailyData[i].count;
-                if (prev > 0) {
-                    growthRates.push(((curr - prev) / prev) * 100);
-                    labels.push(dailyData[i].date.toLocaleDateString());
-                }
-            }
-            
-            growthRateChart = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: labels.slice(-30),
-                    datasets: [{
-                        label: 'Growth Rate %',
-                        data: growthRates.slice(-30),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: { color: '#334155' },
-                            ticks: { 
-                                color: '#94a3b8',
-                                callback: function(value) {
-                                    return value + '%';
-                                }
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true
                             }
                         },
-                        x: {
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateTopDaysChart(dailyData) {
-            const ctx = document.getElementById('topDaysChart');
-            if (!ctx) return;
-            
-            if (topDaysChart) topDaysChart.destroy();
-            
-            const sorted = [...dailyData].sort((a, b) => b.count - a.count).slice(0, 10);
-            
-            topDaysChart = new Chart(ctx.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: sorted.map(item => item.date.toLocaleDateString()),
-                    datasets: [{
-                        label: 'Invoices',
-                        data: sorted.map(item => item.count),
-                        backgroundColor: '#6366f1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9'
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        y: {
-                            grid: { display: false },
-                            ticks: { color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateAvgRevenuePerInvoiceChart(dailyData) {
-            const ctx = document.getElementById('avgRevenuePerInvoiceChart');
-            if (!ctx) return;
-            
-            if (avgRevenuePerInvoiceChart) avgRevenuePerInvoiceChart.destroy();
-            
-            const avgRevenue = dailyData.map(item => 
-                item.count > 0 ? item.revenue / item.count : 0
-            );
-            
-            avgRevenuePerInvoiceChart = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: dailyData.map(item => item.date.toLocaleDateString()),
-                    datasets: [{
-                        label: 'Avg Revenue per Invoice',
-                        data: avgRevenue,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(30, 41, 59, 0.95)',
                             titleColor: '#f1f5f9',
                             bodyColor: '#f1f5f9',
                             callbacks: {
                                 label: function(context) {
-                                    return '$' + context.parsed.y.toFixed(2);
+                                    if (context.datasetIndex === 0) {
+                                        return 'Revenue: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    } else {
+                                        return '30-Day Avg: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                    }
                                 }
                             }
                         }
                     },
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: '#334155' },
-                            ticks: { 
-                                color: '#94a3b8',
-                                callback: function(value) {
-                                    return '$' + value.toFixed(0);
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM d'
                                 }
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
                             }
                         },
-                        x: {
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue',
+                                color: '#94a3b8'
+                            }
                         }
                     }
                 }
             });
         }
+
+        // 2. Invoice Volume Trend Chart
+        function updateInvoiceVolumeChart() {
+            const ctx = document.getElementById('invoiceVolumeChart');
+            if (!ctx) return;
+            
+            if (invoiceVolumeChart) invoiceVolumeChart.destroy();
+            
+            const last30Days = getLast30DaysData();
+            if (last30Days.length === 0) return;
+            
+            const labels = last30Days.map(item => item.date);
+            const invoiceCounts = last30Days.map(item => item.count || 0);
+            
+            invoiceVolumeChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Invoice Count',
+                        data: invoiceCounts,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Invoices: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Invoice Count',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 3. Average Invoice Value Trend Chart
+        function updateAvgInvoiceValueChart() {
+            const ctx = document.getElementById('avgInvoiceValueChart');
+            if (!ctx) return;
+            
+            if (avgInvoiceValueChart) avgInvoiceValueChart.destroy();
+            
+            const last30Days = getLast30DaysData();
+            if (last30Days.length === 0) return;
+            
+            const labels = last30Days.map(item => item.date);
+            const avgValues = last30Days.map(item => 
+                item.count > 0 ? (item.revenue || 0) / item.count : 0
+            );
+            
+            avgInvoiceValueChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Invoice Value',
+                        data: avgValues,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Avg Invoice Value: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day',
+                                displayFormats: {
+                                    day: 'MMM d'
+                                }
+                            },
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Average Invoice Value',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 4. Staff Revenue Distribution Chart
+        function updateStaffRevenueChart() {
+            const ctx = document.getElementById('staffRevenueChart');
+            if (!ctx || !staffData || !staffData.dailyData) return;
+            
+            if (staffRevenueChart) staffRevenueChart.destroy();
+            
+            // Get last 30 days of staff data
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            yesterday.setHours(0, 0, 0, 0);
+            
+            const startDate = new Date(yesterday);
+            startDate.setDate(startDate.getDate() - 29);
+            startDate.setHours(0, 0, 0, 0);
+            
+            const last30DaysStaff = staffData.dailyData.filter(item => {
+                return item.date >= startDate && item.date <= yesterday;
+            });
+            
+            // Aggregate revenue by staff member
+            const staffRevenueMap = {};
+            last30DaysStaff.forEach(dayData => {
+                if (dayData.staff) {
+                    dayData.staff.forEach(staffMember => {
+                        const key = staffMember.staffid || staffMember.staff_name || 'Unknown';
+                        if (!staffRevenueMap[key]) {
+                            staffRevenueMap[key] = {
+                                name: staffMember.staff_name || staffMember.staffid || 'Unknown',
+                                revenue: 0
+                            };
+                        }
+                        staffRevenueMap[key].revenue += staffMember.revenue || 0;
+                    });
+                }
+            });
+            
+            // Convert to array and sort by revenue descending
+            const staffArray = Object.values(staffRevenueMap)
+                .sort((a, b) => b.revenue - a.revenue);
+            
+            // Calculate bottom 20% threshold
+            const bottom20PercentIndex = Math.floor(staffArray.length * 0.8);
+            
+            const labels = staffArray.map(s => s.name);
+            const revenues = staffArray.map(s => s.revenue);
+            const backgroundColors = staffArray.map((s, index) => 
+                index >= bottom20PercentIndex ? '#ef4444' : '#6366f1'
+            );
+            
+            staffRevenueChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Revenue (Last 30 Days)',
+                        data: revenues,
+                        backgroundColor: backgroundColors
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: $' + context.parsed.x.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue (Last 30 Days)',
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 5. Revenue by Service Chart
+        function updateRevenueByServiceChart() {
+            const ctx = document.getElementById('revenueByServiceChart');
+            if (!ctx) return;
+            
+            if (revenueByServiceChart) revenueByServiceChart.destroy();
+            
+            // Note: Service data may not be available in current data structure
+            // This is a placeholder that will show a message if data is not available
+            // You may need to modify the data fetching to include service-level details
+            
+            const placeholderData = {
+                labels: ['Service data not available'],
+                data: [0]
+            };
+            
+            revenueByServiceChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: placeholderData.labels,
+                    datasets: [{
+                        label: 'Revenue by Service (Last 30 Days)',
+                        data: placeholderData.data,
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#f1f5f9',
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: $' + context.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#334155'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Total Revenue (Last 30 Days)',
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
     </script>
 </body>
 </html>
