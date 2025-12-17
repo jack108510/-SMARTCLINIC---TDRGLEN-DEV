@@ -2340,9 +2340,6 @@
             endDate = yesterday;
 
             switch(period) {
-                case 'today':
-                    startDate = new Date(yesterday);
-                    break;
                 case 'week':
                     startDate = new Date(yesterday);
                     startDate.setDate(startDate.getDate() - 6);
