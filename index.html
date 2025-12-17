@@ -2007,7 +2007,14 @@
             lastWeek.setDate(lastWeek.getDate() - 7);
             const lastWeekStr = lastWeek.toISOString().split('T')[0];
 
-            const yesterdayData = data.find(d => d.txn_day === yesterdayStr);
+            // Find yesterday's data, or use the most recent data if yesterday's is not available
+            let yesterdayData = data.find(d => d.txn_day === yesterdayStr);
+            if (!yesterdayData) {
+                // Sort data by date and get the most recent
+                const sortedData = [...data].sort((a, b) => (b.txn_day || '').localeCompare(a.txn_day || ''));
+                yesterdayData = sortedData[0];
+            }
+            
             const dayBeforeData = data.find(d => d.txn_day === dayBeforeStr);
             const lastWeekData = data.find(d => d.txn_day === lastWeekStr);
 
