@@ -1609,14 +1609,6 @@
                 productivity: recent12Months.reduce((sum, d) => sum + (d.productivity || 0), 0) / recent12Months.length
             } : { totalHours: null, staffCount: null, avgHours: null, productivity: null };
 
-            // Total Staff Hours
-            updateKPICard('staffTotalHours', 'staffTotalHoursComparisons', {
-                value: currentMonthStaff ? currentMonthStaff.totalHours : null,
-                prevDay: prevMonthStaff ? prevMonthStaff.totalHours : null,
-                lastWeek: lastYearMonthStaff ? lastYearMonthStaff.totalHours : null,
-                avg30d: avg12Months.totalHours
-            }, (val) => val.toFixed(1) + ' hrs');
-
             // Active Staff Members
             updateKPICard('staffActiveMembers', 'staffActiveMembersComparisons', {
                 value: currentMonthStaff ? currentMonthStaff.staffCount : null,
@@ -1624,36 +1616,6 @@
                 lastWeek: lastYearMonthStaff ? lastYearMonthStaff.staffCount : null,
                 avg30d: avg12Months.staffCount
             }, (val) => Math.round(val) + ' staff');
-
-            // Average Hours per Staff
-            updateKPICard('staffAvgHours', 'staffAvgHoursComparisons', {
-                value: currentMonthStaff ? currentMonthStaff.avgHours : null,
-                prevDay: prevMonthStaff ? prevMonthStaff.avgHours : null,
-                lastWeek: lastYearMonthStaff ? lastYearMonthStaff.avgHours : null,
-                avg30d: avg12Months.avgHours
-            }, (val) => val.toFixed(1) + ' hrs');
-
-            // Productivity Score (revenue per hour)
-            const productivityCurrent = currentMonthStaff && currentMonthStaff.totalHours > 0
-                ? currentMonthStaff.totalRevenue / currentMonthStaff.totalHours
-                : null;
-            const productivityPrev = prevMonthStaff && prevMonthStaff.totalHours > 0
-                ? prevMonthStaff.totalRevenue / prevMonthStaff.totalHours
-                : null;
-            const productivityLastYear = lastYearMonthStaff && lastYearMonthStaff.totalHours > 0
-                ? lastYearMonthStaff.totalRevenue / lastYearMonthStaff.totalHours
-                : null;
-            const productivity12Months = avg12Months.totalHours > 0 && recent12Months.length > 0
-                ? recent12Months.reduce((sum, d) => sum + (d.totalRevenue || 0), 0) / 
-                  recent12Months.reduce((sum, d) => sum + (d.totalHours || 0), 0)
-                : null;
-
-            updateKPICard('staffProductivity', 'staffProductivityComparisons', {
-                value: productivityCurrent,
-                prevDay: productivityPrev,
-                lastWeek: productivityLastYear,
-                avg30d: productivity12Months
-            }, (val) => '$' + val.toFixed(2) + '/hr');
         }
 
         // Update Staff Charts
