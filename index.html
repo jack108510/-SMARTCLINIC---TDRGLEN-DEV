@@ -785,18 +785,6 @@
                 <!-- Staff Charts Grid -->
                 <div class="analytics-grid">
                     <div class="analytics-card">
-                        <h3>👥 Staff Hours Trend</h3>
-                        <div class="analytics-chart">
-                            <canvas id="staffHoursChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>📅 Staff by Day of Week</h3>
-                        <div class="analytics-chart">
-                            <canvas id="staffDayOfWeekChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
                         <h3>🏆 Top Performing Staff</h3>
                         <div class="analytics-chart">
                             <canvas id="topStaffChart"></canvas>
@@ -806,18 +794,6 @@
                         <h3>📈 Staff Productivity Trend</h3>
                         <div class="analytics-chart">
                             <canvas id="staffProductivityChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>⏱️ Average Hours Distribution</h3>
-                        <div class="analytics-chart">
-                            <canvas id="staffHoursDistributionChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="analytics-card">
-                        <h3>📊 Staff Efficiency Ratio</h3>
-                        <div class="analytics-chart">
-                            <canvas id="staffEfficiencyChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -1622,12 +1598,8 @@
         function updateStaffCharts() {
             if (!staffData || !staffData.dailyData || staffData.dailyData.length === 0) return;
 
-            updateStaffHoursChart();
-            updateStaffDayOfWeekChart();
             updateTopStaffChart();
             updateStaffProductivityChart();
-            updateStaffHoursDistributionChart();
-            updateStaffEfficiencyChart();
         }
 
         function updateStaffHoursChart() {
