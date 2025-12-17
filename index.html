@@ -920,12 +920,8 @@
         let topDaysChart = null;
         let avgRevenuePerInvoiceChart = null;
         let staffData = null;
-        let staffHoursChart = null;
-        let staffDayOfWeekChart = null;
         let topStaffChart = null;
         let staffProductivityChart = null;
-        let staffHoursDistributionChart = null;
-        let staffEfficiencyChart = null;
 
         // Navigation Functions
         function showPage(pageId, buttonElement) {
@@ -1602,72 +1598,7 @@
             updateStaffProductivityChart();
         }
 
-        function updateStaffHoursChart() {
-            const ctx = document.getElementById('staffHoursChart');
-            if (!ctx || !staffData) return;
-            
-            if (staffHoursChart) staffHoursChart.destroy();
-            
-            const recentData = staffData.dailyData.slice(-12); // Last 12 months
-            
-            staffHoursChart = new Chart(ctx.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: recentData.map(d => d.date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })),
-                    datasets: [{
-                        label: 'Total Hours',
-                        data: recentData.map(d => d.totalHours),
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }, {
-                        label: 'Staff Count',
-                        data: recentData.map(d => d.staffCount),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        fill: true,
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: '#f1f5f9' }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(30, 41, 59, 0.95)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: 'Hours', color: '#94a3b8' },
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        y1: {
-                            beginAtZero: true,
-                            position: 'right',
-                            title: { display: true, text: 'Staff Count', color: '#94a3b8' },
-                            grid: { drawOnChartArea: false },
-                            ticks: { color: '#94a3b8' }
-                        },
-                        x: {
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8' }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateStaffDayOfWeekChart() {
+        function updateTopStaffChart() {
             const ctx = document.getElementById('staffDayOfWeekChart');
             if (!ctx || !staffData) return;
             
