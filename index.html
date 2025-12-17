@@ -1029,8 +1029,11 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page loaded - Initializing dashboard...');
             setupAutoRefresh();
+            console.log('📊 Fetching invoice data from:', INVOICE_WEBHOOK);
             fetchData(); // Fetch invoice/financial data
+            console.log('👥 Fetching staff data from:', STAFF_WEBHOOK);
             fetchStaffData(); // Fetch staff data
             loadSettings();
         });
