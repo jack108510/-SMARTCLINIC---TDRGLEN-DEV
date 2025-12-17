@@ -2361,24 +2361,6 @@
             comparisons.forEach(comp => {
                 let compData = [];
                 switch(comp) {
-                    case 'sameWeekLastYear':
-                        const lastYearWeekStart = new Date(startDate);
-                        lastYearWeekStart.setFullYear(lastYearWeekStart.getFullYear() - 1);
-                        const lastYearWeekEnd = new Date(endDate);
-                        lastYearWeekEnd.setFullYear(lastYearWeekEnd.getFullYear() - 1);
-                        compData = fullInvoiceData.dailyData.filter(d => 
-                            d.date >= lastYearWeekStart && d.date <= lastYearWeekEnd
-                        );
-                        break;
-                    case 'sameMonthLastYear':
-                        const lastYearMonthStart = new Date(startDate);
-                        lastYearMonthStart.setFullYear(lastYearMonthStart.getFullYear() - 1);
-                        const lastYearMonthEnd = new Date(endDate);
-                        lastYearMonthEnd.setFullYear(lastYearMonthEnd.getFullYear() - 1);
-                        compData = fullInvoiceData.dailyData.filter(d => 
-                            d.date >= lastYearMonthStart && d.date <= lastYearMonthEnd
-                        );
-                        break;
                     case 'lastYear':
                         const lastYearStart = new Date(startDate);
                         lastYearStart.setFullYear(lastYearStart.getFullYear() - 1);
